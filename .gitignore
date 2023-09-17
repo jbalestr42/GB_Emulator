@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+Debug/
+.vs/
+LogsCmp/
+Emulator/log.txt
+Debug/
+ROMS/
