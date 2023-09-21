@@ -10,27 +10,31 @@
 
 int main(int argc, char* argv[])
 {
-    MMU ram;
-    Interrupts interrupts(ram);
-    CPU cpu(ram, interrupts);
+    MMU mmu;
+    Interrupts interrupts(mmu);
+    CPU cpu(mmu, interrupts);
     Timer timer(interrupts);
-    PPU ppu(160, 144, 4, 60, "GAME BOY");
+    PPU ppu(mmu, interrupts, 160, 144, 4, 60, "GAME BOY");
 
-    // Hack unti_l graphics is working
-    ram.addMemoryOverride(HardwareRegisters::LY_ADDR, MMU::MemoryOverride([]() { return 0x90; }, nullptr));
-    ram.addMemoryOverride(HardwareRegisters::DIV_ADDR, MMU::MemoryOverride(
+    // Hack until graphics is working
+    //mmu.addMemoryOverride(HardwareRegisters::LY_ADDR, MMU::MemoryOverride([]() { return 0x90; }, nullptr));
+    mmu.addMemoryOverride(HardwareRegisters::DIV_ADDR, MMU::MemoryOverride(
         [&timer]() { return static_cast<uint8_t>(timer.getDivRegister()); },
         [&timer](uint8_t value) { timer.resetDivRegister(); }));
-    ram.addMemoryOverride(HardwareRegisters::TIMA_ADDR, MMU::MemoryOverride(
+    mmu.addMemoryOverride(HardwareRegisters::TIMA_ADDR, MMU::MemoryOverride(
         [&timer]() { return static_cast<uint8_t>(timer.getTimerCounter()); },
         [&timer](uint8_t value) { timer.setTimerCounter(value); }));
-    ram.addMemoryOverride(HardwareRegisters::TMA_ADDR, MMU::MemoryOverride(
+    mmu.addMemoryOverride(HardwareRegisters::TMA_ADDR, MMU::MemoryOverride(
         [&timer]() { return timer.getTimerModulo(); },
         [&timer](uint8_t value) { timer.setTimerModulo(value); }));
-    ram.addMemoryOverride(HardwareRegisters::TAC_ADDR, MMU::MemoryOverride(
+    mmu.addMemoryOverride(HardwareRegisters::TAC_ADDR, MMU::MemoryOverride(
         [&timer]() { return timer.getTimerControl(); },
         [&timer](uint8_t value) { timer.setTimerControl(value); }));
 
+    //mmu.loadRom(argv[1]);
+    //mmu.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\\cpu_instrs\\individual\\01-special.gb");
+    mmu.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\dmg-acid2.gb");
+    mmu.dump();
     while (ppu.isOpen())
     {
         sf::Event event;
@@ -44,8 +48,9 @@ int main(int argc, char* argv[])
 
         size_t ticks = cpu.update();
         timer.update(ticks);
-
-		//ppu.display();
+		
+        ppu.update(ticks);
+        //ppu.display();
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

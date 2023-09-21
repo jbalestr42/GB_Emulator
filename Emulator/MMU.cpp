@@ -29,14 +29,6 @@ void MMU::write8(size_t p, uint8_t v)
 	}
 	else
 	{
-		if (p == 0xFF0F)
-		{
-			std::cout << "write IF 0xff0f : " << (int)v << std::endl;
-		}
-		if (p == 0xFFFF)
-		{
-			std::cout << "write IE 0xffff : " << (int)v << std::endl;
-		}
 		_memory[p] = v;
 	}
 }
@@ -56,7 +48,7 @@ std::string uint8_to_hex_string(const uint8_t* v, const size_t s)
 	{
 		if (i % 16 == 0)
 		{
-			ss << std::endl;
+			ss << std::endl << i << " ";
 		}
 		if (i % 2 == 0)
 		{

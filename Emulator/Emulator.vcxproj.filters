@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers sources\PPUModes">
+      <UniqueIdentifier>{48298f13-9891-4dde-aec8-566697f46003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\PPUModes">
+      <UniqueIdentifier>{3e821235-d816-4929-99e9-827f22881dd8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -42,6 +48,24 @@
     <ClCompile Include="OpCodes.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="PixelFetcher.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="ITickable.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClCompile>
+    <ClCompile Include="OamSearchMode.cpp">
+      <Filter>Fichiers sources\PPUModes</Filter>
+    </ClCompile>
+    <ClCompile Include="VBlankMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelTransferMode.cpp">
+      <Filter>Fichiers sources\PPUModes</Filter>
+    </ClCompile>
+    <ClCompile Include="Fifo.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPU.hpp">
@@ -66,6 +90,24 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Timer.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelFetcher.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="PPUMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+    </ClInclude>
+    <ClInclude Include="HBlankMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+    </ClInclude>
+    <ClInclude Include="OamSearchMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelTransferMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+    </ClInclude>
+    <ClInclude Include="Fifo.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

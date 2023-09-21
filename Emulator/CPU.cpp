@@ -148,6 +148,7 @@ size_t CPU::update()
 		//std::cout << s << std::endl;
 		_mmu.write8(HardwareRegisters::SC_ADDR, 0x01);
 		//_interrupts.raiseInterrupt(Interrupts::Type::Serial);
+		//_mmu.dump();
 	}
 	
 	_registers.pc &= 0xFFFF;

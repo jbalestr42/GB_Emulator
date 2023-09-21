@@ -1,6 +1,19 @@
 #include "PPU.hpp"
+#include "HardwareRegisters.hpp"
+#include "HBlankMode.hpp"
+#include "VBlankMode.hpp"
+#include "PixelTransferMode.hpp"
+#include "OamSearchMode.hpp"
 
-PPU::PPU(std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title) :
+PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title) :
+	_mmu(mmu),
+	_interrupts(interrupts),
+	_mode(PPU::Mode::OamSearch),
+	_oamSearchMode(mmu),
+	_pixelTransferMode(mmu, *this),
+	_ticks(0),
+	_currentLine(0),
+	_lycInterruptRaiseDuringRendering(false),
 	_width(width),
 	_height(height),
 	_pixelSize(pixelSize),
@@ -27,6 +40,140 @@ PPU::PPU(std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std:
 		}
 	}
 	_window.setFramerateLimit(_frameRate);
+
+	setMode(PPU::Mode::OamSearch);
+	_oamSearchMode.start();
+}
+
+void PPU::update(size_t ticks)
+{
+	//for (size_t i = 0; i < ticks; i++)
+	{
+		//_ticks++;
+		_ticks += ticks;
+		uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
+		uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
+		uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR);
+		_mmu.write8(HardwareRegisters::STAT_ADDR, BitUtils::SetBit(stat, 6, ly == lyc));
+
+		if (ly == lyc && isLYLYCInterruptEnabled() && !_lycInterruptRaiseDuringRendering)
+		{
+			_lycInterruptRaiseDuringRendering = true;
+			_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+		}
+
+		if (_mode == PPU::Mode::OamSearch)
+		{
+			//_oamSearchMode.tick(1);
+
+			if (_ticks >= _oamSearchMode.getMaxTick())
+			{
+				setMode(PPU::Mode::PixelTransfer);
+				//_pixelTransferMode.start();
+			}
+		}
+		else if (_mode == PPU::Mode::PixelTransfer)
+		{
+			//_pixelTransferMode.tick(1);
+			if (_ticks >= _pixelTransferMode.getMaxTick())
+			{
+				if (isHBlankInterruptEnabled())
+				{
+					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+				}
+				setMode(PPU::Mode::HBlank);
+
+				if (!BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
+				{
+					return;
+				}
+
+				if (!BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
+				{
+					return;
+				}
+
+				uint8_t scrollX = _mmu.read8(HardwareRegisters::SCX_ADDR);
+				uint8_t scrollY = _mmu.read8(HardwareRegisters::SCY_ADDR);
+
+				uint16_t tileMapAddr = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_TILEMAP_POS) ? VRAM_TILEMAP_2_ADDR : VRAM_TILEMAP_1_ADDR;
+				int yOffset = (((scrollY + _currentLine) / PPU::TILE_HEIGHT_PX) % PPU::TILEMAP_HEIGHT_TILE) * PPU::TILEMAP_WIDTH_TILE;
+				int yTileOffset = (scrollY + _currentLine) % PPU::TILE_HEIGHT_PX;
+
+				for (int x = 0; x < _width; ++x)
+				{
+					int xOffset = ((scrollX + x) / PPU::TILE_WIDTH_PX) % PPU::TILEMAP_WIDTH_TILE;
+					int xTileOffset = (scrollX + x) % PPU::TILE_WIDTH_PX;
+					uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
+					bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
+					uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
+					int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
+
+					uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
+					uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
+					uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
+					uint8_t colorValue = (msb << 1) | lsb;
+					putPixel(colorValue, x, _currentLine);
+				}
+			}
+		}
+		else if (_mode == PPU::Mode::HBlank)
+		{
+			//_hBlank.tick(1);
+			if (_ticks >= _hBlank.getMaxTick())
+			{
+				_lycInterruptRaiseDuringRendering = false;
+				_currentLine++;
+				ly++;
+				_mmu.write8(HardwareRegisters::LY_ADDR, ly);
+				if (_currentLine == 144)//ly == 144)
+				{
+					if (isVBlankInterruptEnabled())
+					{
+						_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+					}
+					_interrupts.raiseInterrupt(Interrupts::Type::VBlank);
+					setMode(PPU::Mode::VBlank);
+					display();
+				}
+				else
+				{
+					if (isOamInterruptEnabled())
+					{
+						_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+					}
+					//_oamSearchMode.start();
+					setMode(PPU::Mode::OamSearch);
+				}
+			}
+		}
+		else if (_mode == PPU::Mode::VBlank)
+		{
+			//_vBlank.tick(1);
+			if (_ticks >= _vBlank.getMaxTick())
+			{
+				ly++;
+				_currentLine++;
+				_lycInterruptRaiseDuringRendering = false;
+				_mmu.write8(HardwareRegisters::LY_ADDR, ly);
+				if (_currentLine > 153)// ly == 1)
+				{
+					if (isOamInterruptEnabled())
+					{
+						_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+					}
+					_mmu.write8(HardwareRegisters::LY_ADDR, 0);
+					//_oamSearchMode.start();
+					_currentLine = 0;
+					setMode(PPU::Mode::OamSearch);
+				}
+				else
+				{
+					setMode(PPU::Mode::VBlank);
+				}
+			}
+		}
+	}
 }
 
 void PPU::display()
@@ -59,43 +206,42 @@ bool PPU::pollEvent(sf::Event& events)
 	return _window.pollEvent(events);
 }
 
-/*void PPU::draw(uint16_t b1, uint16_t b2, uint16_t b3, CPU& cpu)
+void PPU::setMode(PPU::Mode mode)
 {
-	cpu.setRegister(0xF, 0);
+	_mode = mode;
+	_ticks = 0;
 
-	for (uint16_t k = 0; k < b1; k++)
-	{
-		uint16_t line = cpu.getMemory(cpu.getIndexRegister() + k); // Get the line of the sprite to draw
-		uint16_t y = cpu.getRegister(b2) % _height + k;  // Get the y position
+	uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR) & 0b11111100;
+	_mmu.write8(HardwareRegisters::STAT_ADDR, stat | static_cast<uint8_t>(_mode));
+}
 
-		if (y < _height)
-		{
-			for (uint16_t j = 0, shift = 7; j < 8; j++, shift--)
-			{
-				uint16_t x = cpu.getRegister(b3) % _width + j; // Get the x position
+void PPU::putPixel(uint8_t color, uint8_t x, uint8_t y)
+{
+	static sf::Color palette[4] = { sf::Color(255, 255, 255), sf::Color(128, 128, 128), sf::Color(64, 64, 64), sf::Color(0, 0, 0) };
+	sf::Vertex* quad = &_vertices[(x + y * _width) * 4];
 
-				if (x < _width && (line & (0x1 << shift)) != 0) // Check if the bit must change
-				{
-					sf::Vertex* quad = &_vertices[(x + y * _width) * 4];
-					// If pixel was activated we must turn it off and set register 0xF to 1
-					if (quad[0].color == sf::Color::White)
-					{
-						quad[0].color = sf::Color::Black;
-						quad[1].color = sf::Color::Black;
-						quad[2].color = sf::Color::Black;
-						quad[3].color = sf::Color::Black;
-						cpu.setRegister(0xF, 1);
-					}
-					else
-					{
-						// If pixel was desactivated we activate it
-						quad[0].color = sf::Color::White;
-						quad[1].color = sf::Color::White;
-						quad[2].color = sf::Color::White;
-						quad[3].color = sf::Color::White;
-					}
-				}
-			}
-		}
-	}
-}*/
+	quad[0].color = palette[color];
+	quad[1].color = palette[color];
+	quad[2].color = palette[color];
+	quad[3].color = palette[color];
+}
+
+bool PPU::isLYLYCInterruptEnabled() const
+{
+	return BitUtils::GetBit(_mmu.read8(HardwareRegisters::STAT_ADDR), 6);
+}
+
+bool PPU::isHBlankInterruptEnabled() const
+{
+	return BitUtils::GetBit(_mmu.read8(HardwareRegisters::STAT_ADDR), 3);
+}
+
+bool PPU::isVBlankInterruptEnabled() const
+{
+	return BitUtils::GetBit(_mmu.read8(HardwareRegisters::STAT_ADDR), 4);
+}
+
+bool PPU::isOamInterruptEnabled() const
+{
+	return BitUtils::GetBit(_mmu.read8(HardwareRegisters::STAT_ADDR), 5);
+}
