@@ -13,6 +13,7 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 	_pixelTransferMode(mmu, *this),
 	_ticks(0),
 	_currentLine(0),
+	_windowLineCounter(0),
 	_lycInterruptRaiseDuringRendering(false),
 	_width(width),
 	_height(height),
@@ -82,39 +83,7 @@ void PPU::update(size_t ticks)
 					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 				}
 				setMode(PPU::Mode::HBlank);
-
-				if (!BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
-				{
-					return;
-				}
-
-				if (!BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
-				{
-					return;
-				}
-
-				uint8_t scrollX = _mmu.read8(HardwareRegisters::SCX_ADDR);
-				uint8_t scrollY = _mmu.read8(HardwareRegisters::SCY_ADDR);
-
-				uint16_t tileMapAddr = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_TILEMAP_POS) ? VRAM_TILEMAP_2_ADDR : VRAM_TILEMAP_1_ADDR;
-				int yOffset = (((scrollY + _currentLine) / PPU::TILE_HEIGHT_PX) % PPU::TILEMAP_HEIGHT_TILE) * PPU::TILEMAP_WIDTH_TILE;
-				int yTileOffset = (scrollY + _currentLine) % PPU::TILE_HEIGHT_PX;
-
-				for (int x = 0; x < _width; ++x)
-				{
-					int xOffset = ((scrollX + x) / PPU::TILE_WIDTH_PX) % PPU::TILEMAP_WIDTH_TILE;
-					int xTileOffset = (scrollX + x) % PPU::TILE_WIDTH_PX;
-					uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
-					bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
-					uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
-					int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
-
-					uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
-					uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
-					uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
-					uint8_t colorValue = (msb << 1) | lsb;
-					putPixel(colorValue, x, _currentLine);
-				}
+				draw();
 			}
 		}
 		else if (_mode == PPU::Mode::HBlank)
@@ -165,6 +134,7 @@ void PPU::update(size_t ticks)
 					_mmu.write8(HardwareRegisters::LY_ADDR, 0);
 					//_oamSearchMode.start();
 					_currentLine = 0;
+					_windowLineCounter = 0;
 					setMode(PPU::Mode::OamSearch);
 				}
 				else
@@ -204,6 +174,82 @@ bool PPU::isOpen()
 bool PPU::pollEvent(sf::Event& events)
 {
 	return _window.pollEvent(events);
+}
+
+void PPU::draw()
+{
+	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
+	{
+		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
+		{
+			drawBackground();
+
+			if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_ENABLE_POS))
+			{
+				drawWindow();
+			}
+		}
+	}
+}
+
+void PPU::drawBackground()
+{
+	uint8_t scrollX = _mmu.read8(HardwareRegisters::SCX_ADDR);
+	uint8_t scrollY = _mmu.read8(HardwareRegisters::SCY_ADDR);
+
+	uint16_t tileMapAddr = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_TILEMAP_POS) ? VRAM_TILEMAP_2_ADDR : VRAM_TILEMAP_1_ADDR;
+	int yOffset = (((scrollY + _currentLine) / PPU::TILE_HEIGHT_PX) % PPU::TILEMAP_HEIGHT_TILE) * PPU::TILEMAP_WIDTH_TILE;
+	int yTileOffset = (scrollY + _currentLine) % PPU::TILE_HEIGHT_PX;
+
+	for (int x = 0; x < _width; ++x)
+	{
+		int xOffset = ((scrollX + x) / PPU::TILE_WIDTH_PX) % PPU::TILEMAP_WIDTH_TILE;
+		int xTileOffset = (scrollX + x) % PPU::TILE_WIDTH_PX;
+
+		uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
+		bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
+		uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
+		int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
+
+		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
+		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
+		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
+		uint8_t colorValue = (msb << 1) | lsb;
+		putPixel(colorValue, x, _currentLine);
+	}
+}
+
+void PPU::drawWindow()
+{
+	uint8_t winX = _mmu.read8(HardwareRegisters::WX_ADDR) - 7;
+	uint8_t winY = _mmu.read8(HardwareRegisters::WY_ADDR);
+
+	if (winY > _currentLine || winX > _width)
+	{
+		return;
+	}
+
+	uint16_t tileMapAddr = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_TILEMAP_POS) ? VRAM_TILEMAP_2_ADDR : VRAM_TILEMAP_1_ADDR;
+	int yOffset = ((_windowLineCounter / PPU::TILE_HEIGHT_PX) % PPU::TILEMAP_HEIGHT_TILE) * PPU::TILEMAP_WIDTH_TILE;
+	int yTileOffset = _windowLineCounter % PPU::TILE_HEIGHT_PX;
+
+	for (int x = winX; x < _width; ++x)
+	{
+		int xOffset = (x - winX) / PPU::TILE_WIDTH_PX;
+		int xTileOffset = (x - winX) % PPU::TILE_WIDTH_PX;
+
+		uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
+		bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
+		uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
+		int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
+
+		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
+		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
+		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
+		uint8_t colorValue = (msb << 1) | lsb;
+		putPixel(colorValue, x, _currentLine);
+	}
+	_windowLineCounter++;
 }
 
 void PPU::setMode(PPU::Mode mode)

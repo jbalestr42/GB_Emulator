@@ -31,10 +31,6 @@ public:
 	bool isOpen();
 	bool pollEvent(sf::Event& events);
 	void putPixel(uint8_t color, uint8_t x, uint8_t y);
-	bool isLYLYCInterruptEnabled() const;
-	bool isHBlankInterruptEnabled() const;
-	bool isVBlankInterruptEnabled() const;
-	bool isOamInterruptEnabled() const;
 
 	static const uint16_t VRAM_TILEDATA_0_ADDR = 0x8000;
 	static const uint16_t VRAM_TILEDATA_1_ADDR = 0x8800;
@@ -62,7 +58,14 @@ public:
 
 
 private:
+	void draw();
+	void drawBackground();
+	void drawWindow();
 	void setMode(PPU::Mode mode);
+	bool isLYLYCInterruptEnabled() const;
+	bool isHBlankInterruptEnabled() const;
+	bool isVBlankInterruptEnabled() const;
+	bool isOamInterruptEnabled() const;
 
 	MMU& _mmu;
 	Interrupts& _interrupts;
@@ -74,6 +77,7 @@ private:
 	VBlankMode _vBlank;
 	size_t _ticks;
 	uint8_t _currentLine;
+	uint8_t _windowLineCounter;
 	bool _lycInterruptRaiseDuringRendering;
 
 	// Move to LCD/IDisplay to manage SFML and Ncurse ?
@@ -85,15 +89,3 @@ private:
 	sf::RenderWindow _window;
 	sf::VertexArray _vertices;
 };
-// TIle
-// 8x8 pixels
-// 4 shades of grey (2bits Palette)
-// 16 bytes per tile
-
-// Background Map
-// 32x32 Tiles - 256x256 pixels
-// moved using SCY_ADDR SCX_ADDR
-
-// Window (used for UI)
-// moved using WY_ADDR WX_ADDR
-
