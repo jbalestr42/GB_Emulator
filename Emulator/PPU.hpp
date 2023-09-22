@@ -61,11 +61,13 @@ private:
 	void draw();
 	void drawBackground();
 	void drawWindow();
+	void drawSprites();
 	void setMode(PPU::Mode mode);
 	bool isLYLYCInterruptEnabled() const;
 	bool isHBlankInterruptEnabled() const;
 	bool isVBlankInterruptEnabled() const;
 	bool isOamInterruptEnabled() const;
+	sf::Color getColorFromPalette(uint8_t colorId);
 
 	MMU& _mmu;
 	Interrupts& _interrupts;

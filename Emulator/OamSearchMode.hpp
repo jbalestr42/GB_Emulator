@@ -9,9 +9,14 @@ class OamSearchMode : public PPUMode
 public:
 	struct Sprite
 	{
+		uint16_t addr;
 		uint8_t x;
 		uint8_t y;
-		uint16_t addr;
+		uint8_t tileId;
+		bool paletteId;
+		bool xFlip;
+		bool yFlip;
+		bool isBgAndWinOver;
 	};
 
 	OamSearchMode(MMU& mmu);
@@ -19,6 +24,7 @@ public:
 
 	void start();
 	void tick(size_t ticks) override;
+	void tickAll();
 	uint16_t getMaxTick() const override { return 80; }
 	Sprite* getSprites() { return _sprites; }
 	uint8_t getSpriteCount() const { return _currentSprite; }
@@ -38,5 +44,5 @@ private:
 	MMU& _mmu;
 	State _state;
 	uint8_t _currentSprite;
-	Sprite _sprites[OamSearchMode::MAX_SPRITE];
+	Sprite _sprites[40];
 };

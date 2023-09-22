@@ -772,7 +772,7 @@ void CPU::initInstructions()
 		std::cout << "HALT" << std::endl;
 			} });
 		_instructions[0x10] = OpCode("STOP", 0x10, 1, 4, {
-				[&]() { /*_interrupts.setIme(false)*/; } });
+				[&]() { _registers.pc++; } });
 		_instructions[0xF3] = OpCode("DI", 0xF3, 1, 4, {
 				[&]() { _interrupts.setIme(false); std::cout << "ime DI false" << std::endl;
 						_interruptEnableRequest = false; } });

@@ -14,6 +14,7 @@ OamSearchMode::OamSearchMode(MMU& mmu) :
 void OamSearchMode::start()
 {
 	_currentSprite = 0;
+	tickAll();
 }
 
 void OamSearchMode::tick(size_t ticks)
@@ -24,7 +25,6 @@ void OamSearchMode::tick(size_t ticks)
 	{
 		case OamSearchMode::ReadY:
 		{
-
 			_sprites[_currentSprite].addr = spriteAddr;
 			_sprites[_currentSprite].y = _mmu.read8(spriteAddr);
 			_state = OamSearchMode::ReadX;
@@ -43,6 +43,23 @@ void OamSearchMode::tick(size_t ticks)
 		}
 		default:
 			break;
+	}
+}
+
+void OamSearchMode::tickAll()
+{
+	for (uint8_t i = 0; i < 40; i++)
+	{
+		uint16_t spriteAddr = OamSearchMode::VRAM_OAM_ADDR + i * 4;
+		_sprites[i].addr = spriteAddr;
+		_sprites[i].y = _mmu.read8(spriteAddr);
+		_sprites[i].x = _mmu.read8(spriteAddr + 1);
+		_sprites[i].tileId = _mmu.read8(spriteAddr + 2);
+		_sprites[i].paletteId = BitUtils::GetBit(_mmu.read8(spriteAddr + 3), 4);
+		_sprites[i].xFlip = BitUtils::GetBit(_mmu.read8(spriteAddr + 3), 5);
+		_sprites[i].yFlip = BitUtils::GetBit(_mmu.read8(spriteAddr + 3), 6);
+		_sprites[i].isBgAndWinOver = BitUtils::GetBit(_mmu.read8(spriteAddr + 3), 7);
+		_currentSprite++;
 	}
 }
 

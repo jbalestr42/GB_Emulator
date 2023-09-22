@@ -17,6 +17,9 @@ namespace HardwareRegisters
 	static const uint16_t SCX_ADDR = 0xFF43; // Viewport X position
 	static const uint16_t LY_ADDR = 0xFF44; // LCD Y coordinate
 	static const uint16_t LYC_ADDR = 0xFF45; // LY compare
+	static const uint16_t BGP_ADDR = 0xFF47; // BG palette data
+	static const uint16_t OBP0_ADDR = 0xFF48; // OBJ palette 0 data
+	static const uint16_t OBP1_ADDR = 0xFF49; // OBJ palette 1 data
 	static const uint16_t WY_ADDR = 0xFF4A; // Window Y position
 	static const uint16_t WX_ADDR = 0xFF4B; // Window X position plus 7
 	static const uint16_t IE_ADDR = 0xFFFF; // Interrupt enable
