@@ -13,102 +13,147 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Fichiers sources\PPUModes">
+    <Filter Include="Fichiers sources\PPU">
+      <UniqueIdentifier>{7f313331-d9b0-4b50-bc65-3298b3a919cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\PPU">
+      <UniqueIdentifier>{498ad7de-06e9-4521-8043-c8e6e94404bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\PPU\PPUModes">
+      <UniqueIdentifier>{3e821235-d816-4929-99e9-827f22881dd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\PPU\PPUModes">
       <UniqueIdentifier>{48298f13-9891-4dde-aec8-566697f46003}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers d%27en-tête\PPUModes">
-      <UniqueIdentifier>{3e821235-d816-4929-99e9-827f22881dd8}</UniqueIdentifier>
+    <Filter Include="Fichiers d%27en-tête\CPU">
+      <UniqueIdentifier>{f3c8ff40-b524-4d03-88c8-46bc4e8a8b3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\CPU">
+      <UniqueIdentifier>{3bc7bd03-00e1-4d3a-aa83-b1e2b818f028}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Utils">
+      <UniqueIdentifier>{3597e669-5eeb-4e89-bc7a-4b2fa8865768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\MMU">
+      <UniqueIdentifier>{e0934fd5-cc62-4444-b26a-7db8b26cebfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\MMU">
+      <UniqueIdentifier>{9c198087-aea8-42b2-add8-0bf79c38a6d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Utils">
+      <UniqueIdentifier>{1fa1774f-a417-4d38-a6ca-0e65a060c26b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="CPU.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="PPU.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="MMU.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="BitUtils.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Registers.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Interrupts.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="OpCodes.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="PixelFetcher.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ITickable.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClCompile>
     <ClCompile Include="OamSearchMode.cpp">
-      <Filter>Fichiers sources\PPUModes</Filter>
+      <Filter>Fichiers sources\PPU\PPUModes</Filter>
     </ClCompile>
     <ClCompile Include="VBlankMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
     </ClCompile>
     <ClCompile Include="PixelTransferMode.cpp">
-      <Filter>Fichiers sources\PPUModes</Filter>
+      <Filter>Fichiers sources\PPU\PPUModes</Filter>
+    </ClCompile>
+    <ClCompile Include="MMU.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
+    <ClCompile Include="Cartridge.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
+    <ClCompile Include="MBC.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryRange.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
     <ClCompile Include="Fifo.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelFetcher.cpp">
+      <Filter>Fichiers sources\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="PPU.cpp">
+      <Filter>Fichiers sources\PPU</Filter>
+    </ClCompile>
+    <ClCompile Include="ITickable.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="CPU.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Interrupts.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="OpCodes.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Registers.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="BitUtils.cpp">
+      <Filter>Fichiers sources\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CPU.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="PPU.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="MMU.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="BitUtils.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Registers.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="HardwareRegisters.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Interrupts.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="PixelFetcher.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="PPUMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
     </ClInclude>
     <ClInclude Include="HBlankMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
     </ClInclude>
     <ClInclude Include="OamSearchMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
     </ClInclude>
     <ClInclude Include="PixelTransferMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPUModes</Filter>
+      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
+    </ClInclude>
+    <ClInclude Include="MMU.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="Cartridge.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryRange.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="IMemoryRange.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
     <ClInclude Include="Fifo.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="PPU.hpp">
+      <Filter>Fichiers d%27en-tête\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelFetcher.hpp">
+      <Filter>Fichiers d%27en-tête\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="CPU.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Interrupts.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Registers.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="BitUtils.hpp">
+      <Filter>Fichiers d%27en-tête\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="HardwareRegisters.hpp">
+      <Filter>Fichiers d%27en-tête\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

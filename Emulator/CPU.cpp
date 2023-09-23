@@ -95,18 +95,17 @@ size_t CPU::update()
 	if (interruptHandler != nullptr)
 	{
 		_halt = false;
-		std::cout << "stop halt: interrupt service routine" << std::endl;
+		//std::cout << "stop halt: interrupt service routine" << std::endl;
 		interruptServiceRoutine(interruptHandler->addr);
 		_interrupts.clearInterrupt(interruptHandler->type);
 		_interrupts.setIme(false);
-		std::cout << "ime CPU false " << std::endl;
 	}
 
 	if (_halt)
 	{
 		if (_interrupts.hasPendingInterrupts())
 		{
-			std::cout << "stop halt: pending interrupt" << std::endl;
+			//std::cout << "stop halt: pending interrupt" << std::endl;
 			_halt = false;
 		}
 		else
@@ -118,7 +117,6 @@ size_t CPU::update()
 
 	if (_interruptEnableRequest)
 	{
-		std::cout << "ime true after request" << std::endl;
 		_interrupts.setIme(true);
 		_interruptEnableRequest = false;
 	}

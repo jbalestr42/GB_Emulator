@@ -32,9 +32,6 @@ int main(int argc, char* argv[])
         [&timer](uint8_t value) { timer.setTimerControl(value); }));
 
     //mmu.loadRom(argv[1]);
-    //mmu.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\\cpu_instrs\\individual\\01-special.gb");
-    mmu.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\dmg-acid2.gb");
-    mmu.dump();
     while (ppu.isOpen())
     {
         sf::Event event;
@@ -50,7 +47,6 @@ int main(int argc, char* argv[])
         timer.update(ticks);
 		
         ppu.update(ticks);
-        //ppu.display();
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

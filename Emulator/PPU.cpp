@@ -30,8 +30,8 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 		{
 			sf::Vertex* quad = &_vertices[(x + y * _width) * 4];
 			quad[0].position = sf::Vector2f(static_cast<float>(x * _pixelSize), static_cast<float>(y * _pixelSize));
-			quad[1].position = sf::Vector2f(static_cast<float>((x + 1)) * _pixelSize, static_cast<float>(y * _pixelSize));
-			quad[2].position = sf::Vector2f(static_cast<float>((x + 1)) * _pixelSize, static_cast<float>((y + 1) * _pixelSize));
+			quad[1].position = sf::Vector2f(static_cast<float>((x + 1) * _pixelSize), static_cast<float>(y * _pixelSize));
+			quad[2].position = sf::Vector2f(static_cast<float>((x + 1) * _pixelSize), static_cast<float>((y + 1) * _pixelSize));
 			quad[3].position = sf::Vector2f(static_cast<float>(x * _pixelSize), static_cast<float>((y + 1) * _pixelSize));
 
 			quad[0].color = sf::Color::White;

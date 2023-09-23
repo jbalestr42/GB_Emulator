@@ -138,10 +138,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BitUtils.cpp" />
+    <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="Fifo.cpp" />
     <ClCompile Include="Interrupts.cpp" />
     <ClCompile Include="ITickable.hpp" />
+    <ClCompile Include="MBC.cpp" />
+    <ClCompile Include="MemoryRange.cpp" />
     <ClCompile Include="OamSearchMode.cpp" />
     <ClCompile Include="OpCodes.cpp" />
     <ClCompile Include="PixelFetcher.cpp" />
@@ -155,11 +158,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitUtils.hpp" />
+    <ClInclude Include="Cartridge.hpp" />
     <ClInclude Include="CPU.hpp" />
     <ClInclude Include="Fifo.hpp" />
     <ClInclude Include="HardwareRegisters.hpp" />
     <ClInclude Include="HBlankMode.hpp" />
+    <ClInclude Include="IMemoryRange.hpp" />
     <ClInclude Include="Interrupts.hpp" />
+    <ClInclude Include="MBC.hpp" />
+    <ClInclude Include="MemoryRange.hpp" />
     <ClInclude Include="OamSearchMode.hpp" />
     <ClInclude Include="PixelFetcher.hpp" />
     <ClInclude Include="PixelTransferMode.hpp" />

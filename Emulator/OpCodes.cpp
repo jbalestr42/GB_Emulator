@@ -768,16 +768,14 @@ void CPU::initInstructions()
 		_instructions[0x00] = OpCode("NOP", 0x00, 1, 4, {
 				[&]() {} });
 		_instructions[0x76] = OpCode("HALT", 0x76, 1, 4, {
-				[&]() { _halt = true;
-		std::cout << "HALT" << std::endl;
-			} });
+				[&]() { _halt = true; } });
 		_instructions[0x10] = OpCode("STOP", 0x10, 1, 4, {
 				[&]() { _registers.pc++; } });
 		_instructions[0xF3] = OpCode("DI", 0xF3, 1, 4, {
-				[&]() { _interrupts.setIme(false); std::cout << "ime DI false" << std::endl;
+				[&]() { _interrupts.setIme(false);
 						_interruptEnableRequest = false; } });
 		_instructions[0xFB] = OpCode("EI", 0xFB, 1, 4, {
-				[&]() { _interruptEnableRequest = true; std::cout << "ime EI request true" << std::endl; } });
+				[&]() { _interruptEnableRequest = true; } });
 	}
 
 	// JUMPS
@@ -995,7 +993,7 @@ void CPU::initInstructions()
 			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
 			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
 			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
-			[&]() { _interrupts.setIme(true); std::cout << "ime RETI true" << std::endl; } });
+			[&]() { _interrupts.setIme(true); } });
 	}
 
 	// PREFIX CB

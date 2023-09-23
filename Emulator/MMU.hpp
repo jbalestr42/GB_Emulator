@@ -3,9 +3,12 @@
 #include <cstdint>
 #include <functional>
 #include <map>
+#include <vector>
+#include "Cartridge.hpp"
+#include "MMU.hpp"
+#include "MemoryRange.hpp"
 
-// rename MMU and _memory to ram
-class MMU
+class MMU : public IMemoryRange
 {
 public:
 	struct MemoryOverride
@@ -23,18 +26,23 @@ public:
 	};
 
 	MMU();
-	~MMU() = default;
+	~MMU();
 
-	uint8_t loadRom(const char* path);
-	void dump() const;
+	void dump();
 
-	uint8_t read8(size_t p);
-	void write8(size_t p, uint8_t v);
+	virtual uint8_t read8(uint16_t addr) override;
+	virtual void write8(uint16_t addr, uint8_t v) override;
+	virtual bool isInRange(uint16_t addr) const override;
+	virtual size_t size() const override;
+	virtual const char* name() const override;
+
 	void addMemoryOverride(uint16_t addr, MemoryOverride override);
 
 	static const uint16_t MEMORY_SIZE = 0xFFFF;
 
 private:
-	uint8_t _memory[MMU::MEMORY_SIZE];
+	std::vector<IMemoryRange*> _memoryRanges;
 	std::map<size_t, MemoryOverride> _memoryOverride;
+	Cartridge _cartridge;
+
 };
