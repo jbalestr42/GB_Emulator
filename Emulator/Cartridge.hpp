@@ -29,6 +29,7 @@ public:
 	size_t getRamSize() const { return _ramSize; }
 	size_t getRomBankCount() const { return _romSize / ROM_BANK_SIZE; }
 	size_t getRamBankCount() const { return _ramSize / RAM_BANK_SIZE; }
+	bool hasRam() const;
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
@@ -47,7 +48,6 @@ public:
 
 private:
 	void init();
-	bool hasRam() const;
 
 	std::vector<uint8_t> _data;
 	uint16_t _romBegin;

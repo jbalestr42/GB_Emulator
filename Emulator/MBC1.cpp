@@ -66,7 +66,8 @@ void MBC1::write8(size_t addr, uint8_t v)
 	{
 		// This 2-bit register can be used to select a RAM Bank (32 KiB ram carts only),
 		// or to specify the upper two bits (bits 5-6) of the ROM Bank number (1 MiB ROM or larger carts only).
-		_ramBankId = (v & 0b00000011) % _cartridge.getRamBankCount();
+		_ramBankId = (v & 0b00000011);
+		_ramBankId = _cartridge.hasRam() ? _ramBankId % _cartridge.getRamBankCount() : _ramBankId;
 	}
 
 	// Banking Mode Select
