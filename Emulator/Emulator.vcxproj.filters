@@ -63,7 +63,7 @@
     <ClCompile Include="Cartridge.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
-    <ClCompile Include="MBC.cpp">
+    <ClCompile Include="MBCRomOnly.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
     <ClCompile Include="MemoryRange.cpp">
@@ -99,6 +99,9 @@
     <ClCompile Include="BitUtils.cpp">
       <Filter>Fichiers sources\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="MBC1.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PPUMode.hpp">
@@ -119,7 +122,7 @@
     <ClInclude Include="Cartridge.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
-    <ClInclude Include="MBC.hpp">
+    <ClInclude Include="MBCRomOnly.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
     <ClInclude Include="MemoryRange.hpp">
@@ -154,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="HardwareRegisters.hpp">
       <Filter>Fichiers d%27en-tête\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC1.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

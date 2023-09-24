@@ -1,16 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-#include <string>
-#include "IMemoryRange.hpp"
+#include "MemoryRange.hpp"
 
-class MemoryRange : public IMemoryRange
+class Cartridge;
+
+class MBC1 : public IMemoryRange
 {
 public:
-	MemoryRange();
-	MemoryRange(std::string name, uint16_t begin, uint16_t end);
-	~MemoryRange() = default;
+	MBC1(Cartridge& cartridge);
+	~MBC1() = default;
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
@@ -19,8 +18,10 @@ public:
 	virtual const char* name() const override;
 
 private:
-	std::string _name;
-	uint16_t _begin;
-	uint16_t _end;
-	std::vector<uint8_t> _data;
+	Cartridge& _cartridge;
+	std::vector<uint8_t> _ram;
+	bool _isRamEnabled;
+	uint8_t _romBankId;
+	uint8_t _ramBankId;
+	uint8_t _bankingMode;
 };

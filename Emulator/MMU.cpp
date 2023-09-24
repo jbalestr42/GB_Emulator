@@ -3,20 +3,24 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include "MBC.hpp"
 
 MMU::MMU()
 {
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\\Super Mario Land (World).gb");
-	_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\\cpu_instrs\\cpu_instrs.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\\cpu_instrs\\individual\\11-op a,(hl).gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Super Mario Land (World).gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\cpu_instrs\\cpu_instrs.gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_bank1.gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_bank2.gb");
+	_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_mode.gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\ram_64kb.gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\acceptance\\bits\\reg_f.gb");
+	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\cpu_instrs\\individual\\11-op a,(hl).gb");
 	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\dmg-acid2.gb");
 	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Tetris.gb");
 	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Dr. Mario (World).gb");
 
 	// 0000 - 3FFF | 16 KiB ROM bank 00 | From cartridge, usually a fixed bank
 	// 4000 - 7FFF | 16 KiB ROM Bank 01~NN | From cartridge, switchable bank via mapper (if any)
-	_memoryRanges.push_back(new MBC(_cartridge, 0xA000, 0xBFFF));
+	_memoryRanges.push_back(_cartridge.createMBC());
 	// 8000 - 9FFF | 8 KiB Video RAM (VRAM) | In CGB mode, switchable bank 0 / 1
 	// A000 - BFFF | 8 KiB External RAM | From cartridge, switchable bank (if any)
 	_memoryRanges.push_back(new MemoryRange("VRAM", 0x8000, 0x9FFF));
@@ -36,7 +40,7 @@ MMU::MMU()
 	// FFFF - FFFF | Interrupt Enable register (IE)
 	_memoryRanges.push_back(new MemoryRange("IE Register", 0xFFFF, 0xFFFF));
 
-	dump();
+	//dump();
 }
 
 MMU::~MMU()
@@ -47,7 +51,7 @@ MMU::~MMU()
 	}
 }
 
-uint8_t MMU::read8(uint16_t addr)
+uint8_t MMU::read8(size_t addr)
 {
 	if (_memoryOverride.count(addr) != 0 && _memoryOverride[addr].read8 != nullptr)
 	{
@@ -63,11 +67,11 @@ uint8_t MMU::read8(uint16_t addr)
 		}
 	}
 
-	std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
+	//std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
 	return 0xFF;
 }
 
-void MMU::write8(uint16_t addr, uint8_t v)
+void MMU::write8(size_t addr, uint8_t v)
 {
 	if (_memoryOverride.count(addr) != 0 && _memoryOverride[addr].write8 != nullptr)
 	{
@@ -84,12 +88,12 @@ void MMU::write8(uint16_t addr, uint8_t v)
 				return;
 			}
 		}
-		std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
+		//std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
 		//_memory[addr] = v;
 	}
 }
 
-bool MMU::isInRange(uint16_t addr) const
+bool MMU::isInRange(size_t addr) const
 {
 	for (IMemoryRange* memoryRange : _memoryRanges)
 	{
