@@ -27,7 +27,8 @@ uint8_t MBC1::read8(size_t addr)
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF && _isRamEnabled)
 	{
-		return _ram[addr - 0xA000 + (_ramBankId * Cartridge::RAM_BANK_SIZE)];
+		addr = _bankingMode == 0 ? addr - 0xA000 : addr - 0xA000 + (_ramBankId * Cartridge::RAM_BANK_SIZE);
+		return _ram[addr];
 	}
 
 	return 0xFF;
@@ -72,12 +73,12 @@ void MBC1::write8(size_t addr, uint8_t v)
 	else if (addr >= 0x6000 && addr <= 0x7FFF)
 	{
 		// This 1-bit register selects between the two MBC1 banking modes, controlling the _romBankId register
-		//_bankingMode = v & 0b00000001;
-		_bankingMode = 0;
+		_bankingMode = v & 0b00000001;
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF && _isRamEnabled)
 	{
-		_ram[addr - 0xA000 + (_ramBankId * Cartridge::RAM_BANK_SIZE)] = v;
+		addr = _bankingMode == 0 ? addr - 0xA000 : addr - 0xA000 + (_ramBankId * Cartridge::RAM_BANK_SIZE);
+		_ram[addr] = v;
 	}
 }
 
