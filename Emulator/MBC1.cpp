@@ -1,12 +1,12 @@
 #include "MBC1.hpp"
 #include "Cartridge.hpp"
 #include <math.h>
-#include <string>
 
 MBC1::MBC1(Cartridge& cartridge) :
 	_cartridge(cartridge),
 	_isRamEnabled(false),
 	_romBankId(1),
+	_romBankIdHigh(0),
 	_ramBankId(0),
 	_bankingMode(0)
 {
@@ -15,15 +15,14 @@ MBC1::MBC1(Cartridge& cartridge) :
 
 uint8_t MBC1::read8(size_t addr)
 {
-	// TODO: On larger carts which need a >5 bit bank number, the secondary banking register at 4000–5FFF is used to supply an additional 2 bits 
-	// for the effective bank number: Selected ROM Bank = (Secondary Bank << 5) + ROM Bank.1
 	if (addr >= 0x0000 && addr <= 0x3FFF)
 	{
+		addr = _bankingMode == 0 ? addr : addr + ((_romBankIdHigh * Cartridge::ROM_BANK_SIZE) % _cartridge.getRomSize());
 		return _cartridge.read8(addr);
 	}
 	else if (addr >= 0x4000 && addr <= 0x7FFF)
 	{
-		return _cartridge.read8(addr - 0x4000 + Cartridge::ROM_BANK_SIZE * _romBankId);
+		return _cartridge.read8(addr - 0x4000 + (_romBankId * Cartridge::ROM_BANK_SIZE));
 	}
 	else if (addr >= 0xA000 && addr <= 0xBFFF && _isRamEnabled)
 	{
@@ -47,18 +46,14 @@ void MBC1::write8(size_t addr, uint8_t v)
 	else if (addr >= 0x2000 && addr <= 0x3FFF)
 	{
 		// This 5-bit register selects the ROM bank id for the 4000–7FFF region
-		_romBankId = v & 0b00011111;
-		if (_romBankId == 0)
+		if (_cartridge.isMultiCart())
 		{
-			_romBankId = 1;
+			_romBankId = (_romBankId & 0xF0) | std::max(v & 0x0F, 0x01);
 		}
-
-		// If the ROM Bank Number is set to a higher value than the number of banks in the cart,
-		// the bank number is masked to the required number of bits
-		int count = _cartridge.getRomBankCount();
-		int nbBits = static_cast<uint8_t>(log2(count));
-		uint8_t mask = (1 << nbBits) - 1;
-		_romBankId &= mask;
+		else
+		{
+			_romBankId = (_romBankId & 0xE0) | std::max(v & 0x1F, 0x01);
+		}
 	}
 
 	// RAM Bank Id
@@ -68,6 +63,21 @@ void MBC1::write8(size_t addr, uint8_t v)
 		// or to specify the upper two bits (bits 5-6) of the ROM Bank number (1 MiB ROM or larger carts only).
 		_ramBankId = (v & 0b00000011);
 		_ramBankId = _cartridge.hasRam() ? _ramBankId % _cartridge.getRamBankCount() : _ramBankId;
+		_romBankIdHigh = _ramBankId << (_cartridge.isMultiCart() ? 4 : 5);
+
+		if (_cartridge.isMultiCart())
+		{
+			_romBankId = (_romBankId & 0x0F) | _romBankIdHigh;
+		}
+		else
+		{
+			_romBankId = (_romBankId & 0x1F) | _romBankIdHigh;
+		}
+
+		int count = _cartridge.getRomBankCount();
+		int nbBits = static_cast<uint8_t>(log2(count));
+		uint8_t mask = (1 << nbBits) - 1;
+		_romBankId &= mask;
 	}
 
 	// Banking Mode Select

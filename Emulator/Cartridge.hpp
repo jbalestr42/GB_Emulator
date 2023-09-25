@@ -30,6 +30,7 @@ public:
 	size_t getRomBankCount() const { return _romSize / ROM_BANK_SIZE; }
 	size_t getRamBankCount() const { return _ramSize / RAM_BANK_SIZE; }
 	bool hasRam() const;
+	bool isMultiCart() const { return _isMulticart; }
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
@@ -56,4 +57,5 @@ private:
 	Cartridge::Type _type;
 	size_t _romSize;
 	size_t _ramSize;
+	bool _isMulticart;
 };

@@ -22,6 +22,7 @@ private:
 	std::vector<uint8_t> _ram;
 	bool _isRamEnabled;
 	uint8_t _romBankId;
+	uint8_t _romBankIdHigh;
 	uint8_t _ramBankId;
-	uint8_t _bankingMode;
+	uint8_t _bankingMode; // 0: ROM mode | 1: RAM mode
 };
