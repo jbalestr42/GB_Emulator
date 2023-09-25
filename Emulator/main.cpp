@@ -20,13 +20,13 @@ int main(int argc, char* argv[])
     //mmu.addMemoryOverride(HardwareRegisters::LY_ADDR, MMU::MemoryOverride([]() { return 0x90; }, nullptr));
     mmu.addMemoryOverride(HardwareRegisters::DIV_ADDR, MMU::MemoryOverride(
         [&timer]() { return static_cast<uint8_t>(timer.getDivRegister()); },
-        [&timer](uint8_t value) { timer.resetDivRegister(); }));
+        [&timer](uint8_t value) { timer.setDivRegister(); }));
     mmu.addMemoryOverride(HardwareRegisters::TIMA_ADDR, MMU::MemoryOverride(
-        [&timer]() { return static_cast<uint8_t>(timer.getTimerCounter()); },
-        [&timer](uint8_t value) { timer.setTimerCounter(value); }));
+        [&timer]() { return static_cast<uint8_t>(timer.getTima()); },
+        [&timer](uint8_t value) { timer.setTima(value); }));
     mmu.addMemoryOverride(HardwareRegisters::TMA_ADDR, MMU::MemoryOverride(
-        [&timer]() { return timer.getTimerModulo(); },
-        [&timer](uint8_t value) { timer.setTimerModulo(value); }));
+        [&timer]() { return timer.getTma(); },
+        [&timer](uint8_t value) { timer.setTma(value); }));
     mmu.addMemoryOverride(HardwareRegisters::TAC_ADDR, MMU::MemoryOverride(
         [&timer]() { return timer.getTimerControl(); },
         [&timer](uint8_t value) { timer.setTimerControl(value); }));

@@ -11,31 +11,31 @@ public:
 	static const uint16_t TICKS_TO_CYCLES = 4;
 	static const uint16_t DIV_INCREMENT_RATE_HZ = 16384;
 	static const uint16_t DIV_INCREMENT_RATE = CPU::CLOCK_FREQUENCY_HZ / DIV_INCREMENT_RATE_HZ;
-	static const uint16_t TIMER_COUNTER_INCREMENT_RATES[];
+	static const uint16_t TIMA_INCREMENT_RATES[];
 
 	void update(size_t ticks);
-	void resetDivRegister();
+	void setDivRegister();
 	uint16_t getDivRegister();
-	uint16_t getTimerCounter();
-	void setTimerCounter(uint8_t v);
+	uint16_t getTima();
+	void setTima(uint8_t v);
 	uint8_t getTimerControl();
 	void setTimerControl(uint8_t v);
-	uint8_t getTimerModulo();
-	void setTimerModulo(uint8_t v);
+	uint8_t getTma();
+	void setTma(uint8_t v);
 
 private:
 
 	void updateDiv(size_t cycles);
-	void updateTimeCounter(size_t cycles);
+	void updateTima(size_t cycles);
 
 	Interrupts& _interrupts;
 
 	size_t _divCycles;
 	uint16_t _divRegister;
 
-	bool _isTimerCounterEnabled;
-	uint8_t _timerCounterRateId;
-	size_t _timerCounterCycles;
-	uint8_t _timerCounter;
-	uint8_t _timerModulo;
+	bool _isTimaEnabled;
+	uint8_t _timaRateId;
+	size_t _timaCycles;
+	uint8_t _tima;
+	uint8_t _tma;
 };
