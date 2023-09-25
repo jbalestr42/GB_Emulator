@@ -105,6 +105,9 @@
     <ClCompile Include="MBC2.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
+    <ClCompile Include="MBC3.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PPUMode.hpp">
@@ -165,6 +168,9 @@
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
     <ClInclude Include="MBC2.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC3.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
   </ItemGroup>

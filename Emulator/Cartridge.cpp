@@ -3,6 +3,7 @@
 #include "MBCRomOnly.hpp"
 #include "MBC1.hpp"
 #include "MBC2.hpp"
+#include "MBC3.hpp"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -179,6 +180,11 @@ IMemoryRange* Cartridge::createMBC()
 	case Cartridge::MBC_2:
 	case Cartridge::MBC_2_BATTERY:
 		return new MBC2(*this);
+	case Cartridge::MBC_3_TIMER_BATTERY:
+	case Cartridge::MBC_3:
+	case Cartridge::MBC_3_RAM:
+	case Cartridge::MBC_3_RAM_BATTERY:
+		return new MBC3(*this);
 	default:
 		std::cout << "MBC type '" << _type << "' not managed. Using MBCRomOnly" << std::endl;
 		return new MBCRomOnly(*this);

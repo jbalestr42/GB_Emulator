@@ -144,6 +144,7 @@
     <ClCompile Include="Interrupts.cpp" />
     <ClCompile Include="ITickable.hpp" />
     <ClCompile Include="MBC2.cpp" />
+    <ClCompile Include="MBC3.cpp" />
     <ClCompile Include="MBCRomOnly.cpp" />
     <ClCompile Include="MBC1.cpp" />
     <ClCompile Include="MemoryRange.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="IMemoryRange.hpp" />
     <ClInclude Include="Interrupts.hpp" />
     <ClInclude Include="MBC2.hpp" />
+    <ClInclude Include="MBC3.hpp" />
     <ClInclude Include="MBCRomOnly.hpp" />
     <ClInclude Include="MBC1.hpp" />
     <ClInclude Include="MemoryRange.hpp" />
