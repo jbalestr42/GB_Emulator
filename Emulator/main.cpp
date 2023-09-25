@@ -30,6 +30,15 @@ int main(int argc, char* argv[])
     mmu.addMemoryOverride(HardwareRegisters::TAC_ADDR, MMU::MemoryOverride(
         [&timer]() { return timer.getTimerControl(); },
         [&timer](uint8_t value) { timer.setTimerControl(value); }));
+    mmu.addMemoryOverride(HardwareRegisters::DMA_ADDR, MMU::MemoryOverride(
+        nullptr,
+        [&mmu](uint8_t value) {
+            uint16_t sourceAddr = value << 8;
+            for (uint16_t i = 0; i < 160; ++i)
+            {
+                mmu.write8(0xFE00 + i, mmu.read8(sourceAddr + i));
+            }
+        }));
 
     //mmu.loadRom(argv[1]);
     while (ppu.isOpen())
