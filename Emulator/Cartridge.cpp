@@ -2,6 +2,7 @@
 #include "MMU.hpp"
 #include "MBCRomOnly.hpp"
 #include "MBC1.hpp"
+#include "MBC2.hpp"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -37,7 +38,7 @@ bool Cartridge::loadRom(const char* path)
 void Cartridge::init()
 {
 	_title = (char*)&_data[Cartridge::TITLE_ADDR];
-	_type = static_cast<Cartridge::Type>(read8(Cartridge::CARTRIDGE_TYPE_ADDR));
+	_type = getRomTypeFromId(read8(Cartridge::CARTRIDGE_TYPE_ADDR));
 	_romSize = 32768 * (1 << read8(Cartridge::ROM_SIZE_ADDR));
 
 	std::array<size_t, 6> ramSize = { 0, 0, 8192, 32768, 131072, 65536 };
@@ -60,8 +61,84 @@ void Cartridge::init()
 
 bool Cartridge::hasRam() const
 {
-	std::set<Cartridge::Type> typesWithRam = { MBC_1_RAM, MBC_1_RAM_BATTERY };
+	std::set<Cartridge::Type> typesWithRam = {	MBC_1_RAM,
+												MBC_1_RAM_BATTERY,
+												MBC_ROM_RAM,
+												MBC_ROM_RAM_BATTERY,
+												MMM_01_RAM,
+												MMM_01_RAM_BATTERY,
+												MBC_3_RAM,
+												MBC_3_RAM_BATTERY,
+												MBC_5_RAM,
+												MBC_5_RAM_BATTERY,
+												MBC_5_RUMBLE_RAM,
+												MBC_5_RUMBLE_RAM_BATTERY,
+												MBC_7_SENSOR_RUMBLE_RAM_BATTERY,
+												HUC1_RAM_BATTERY };
 	return typesWithRam.count(_type) > 0;
+}
+
+Cartridge::Type Cartridge::getRomTypeFromId(uint8_t typeId) const
+{
+	switch (typeId)
+	{
+		case 0x00:
+			return ROM_ONLY;
+		case 0x01:
+			return MBC_1;
+		case 0x02:
+			return MBC_1_RAM;
+		case 0x03:
+			return MBC_1_RAM_BATTERY;
+		case 0x05:
+			return MBC_2;
+		case 0x06:
+			return MBC_2_BATTERY;
+		case 0x08:
+			return MBC_ROM_RAM;
+		case 0x09:
+			return MBC_ROM_RAM_BATTERY;
+		case 0x0B:
+			return MMM_01;
+		case 0x0C:
+			return MMM_01_RAM;
+		case 0x0D:
+			return MMM_01_RAM_BATTERY;
+		case 0x0F:
+			return MBC_3_TIMER_BATTERY;
+		case 0x11:
+			return MBC_3;
+		case 0x12:
+			return MBC_3_RAM;
+		case 0x13:
+			return MBC_3_RAM_BATTERY;
+		case 0x19:
+			return MBC_5;
+		case 0x1A:
+			return MBC_5_RAM;
+		case 0x1B:
+			return MBC_5_RAM_BATTERY;
+		case 0x1C:
+			return MBC_5_RUMBLE;
+		case 0x1D:
+			return MBC_5_RUMBLE_RAM;
+		case 0x1E:
+			return MBC_5_RUMBLE_RAM_BATTERY;
+		case 0x20:
+			return MBC_6;
+		case 0x22:
+			return MBC_7_SENSOR_RUMBLE_RAM_BATTERY;
+		case 0xFC:
+			return POCKET_CAMERA;
+		case 0xFD:
+			return BANDAI_TAMA5;
+		case 0xFE:
+			return HUC3;
+		case 0xFF:
+			return HUC1_RAM_BATTERY;
+		default:
+			return ROM_ONLY;
+	}
 }
 
 uint8_t Cartridge::read8(size_t addr)
@@ -99,6 +176,9 @@ IMemoryRange* Cartridge::createMBC()
 	case Cartridge::MBC_1_RAM:
 	case Cartridge::MBC_1_RAM_BATTERY:
 		return new MBC1(*this);
+	case Cartridge::MBC_2:
+	case Cartridge::MBC_2_BATTERY:
+		return new MBC2(*this);
 	default:
 		std::cout << "MBC type '" << _type << "' not managed. Using MBCRomOnly" << std::endl;
 		return new MBCRomOnly(*this);

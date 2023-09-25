@@ -11,13 +11,33 @@ class Cartridge : public IMemoryRange
 public:
 	enum Type
 	{
-		ROM_ONLY,			// 0x00
-		MBC_1,				// 0x01
-		MBC_1_RAM,			// 0x02
-		MBC_1_RAM_BATTERY,	// 0x03
-		Unused_04,			// -
-		MBC_2,				// 0x05
-		MBC_2_BATTERY,		// 0x06
+		ROM_ONLY,						// 0x00
+		MBC_1,							// 0x01
+		MBC_1_RAM,						// 0x02
+		MBC_1_RAM_BATTERY,				// 0x03
+		MBC_2,							// 0x05
+		MBC_2_BATTERY,					// 0x06
+		MBC_ROM_RAM,					// 0x08 | No licensed cartridge makes use of this option
+		MBC_ROM_RAM_BATTERY,			// 0x09 | No licensed cartridge makes use of this option
+		MMM_01,							// 0x0B
+		MMM_01_RAM,						// 0x0C
+		MMM_01_RAM_BATTERY,				// 0x0D
+		MBC_3_TIMER_BATTERY,			// 0x0F
+		MBC_3,							// 0x11
+		MBC_3_RAM,						// 0x12
+		MBC_3_RAM_BATTERY,				// 0x13
+		MBC_5,							// 0x19
+		MBC_5_RAM,						// 0x1A
+		MBC_5_RAM_BATTERY,				// 0x1B
+		MBC_5_RUMBLE,					// 0x1C
+		MBC_5_RUMBLE_RAM,				// 0x1D
+		MBC_5_RUMBLE_RAM_BATTERY,		// 0x1E
+		MBC_6,							// 0x20
+		MBC_7_SENSOR_RUMBLE_RAM_BATTERY,// 0x22
+		POCKET_CAMERA,					// 0xFC
+		BANDAI_TAMA5,					// 0xFD
+		HUC3,							// 0xFE
+		HUC1_RAM_BATTERY,				// 0xFF
 	};
 
 	Cartridge();
@@ -29,8 +49,9 @@ public:
 	size_t getRamSize() const { return _ramSize; }
 	size_t getRomBankCount() const { return _romSize / ROM_BANK_SIZE; }
 	size_t getRamBankCount() const { return _ramSize / RAM_BANK_SIZE; }
-	bool hasRam() const;
 	bool isMultiCart() const { return _isMulticart; }
+	bool hasRam() const;
+	Cartridge::Type getRomTypeFromId(uint8_t typeId) const;
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
