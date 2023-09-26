@@ -4,6 +4,7 @@
 #include "VBlankMode.hpp"
 #include "PixelTransferMode.hpp"
 #include "OamSearchMode.hpp"
+#include <iostream>
 
 PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title) :
 	_mmu(mmu),
@@ -48,10 +49,9 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 
 void PPU::update(size_t ticks)
 {
-	//for (size_t i = 0; i < ticks; i++)
+	_ticks += ticks;
+	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
 	{
-		//_ticks++;
-		_ticks += ticks;
 		uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
 		uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
 		uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR);
@@ -69,6 +69,7 @@ void PPU::update(size_t ticks)
 
 			if (_ticks >= _oamSearchMode.getMaxTick())
 			{
+				_ticks -= _oamSearchMode.getMaxTick();
 				setMode(PPU::Mode::PixelTransfer);
 				//_pixelTransferMode.start();
 			}
@@ -82,8 +83,10 @@ void PPU::update(size_t ticks)
 				{
 					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 				}
+				_ticks -= _pixelTransferMode.getMaxTick();
 				setMode(PPU::Mode::HBlank);
 				draw();
+				//std::cout << "draw line  " << (int)_currentLine << std::endl;
 			}
 		}
 		else if (_mode == PPU::Mode::HBlank)
@@ -95,6 +98,7 @@ void PPU::update(size_t ticks)
 				_currentLine++;
 				ly++;
 				_mmu.write8(HardwareRegisters::LY_ADDR, ly);
+				_ticks -= _hBlank.getMaxTick();
 				if (_currentLine == 144)//ly == 144)
 				{
 					if (isVBlankInterruptEnabled())
@@ -112,6 +116,7 @@ void PPU::update(size_t ticks)
 						_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 					}
 					_oamSearchMode.start();
+					//std::cout << "NEXT LINE " << (int)_currentLine << std::endl;
 					setMode(PPU::Mode::OamSearch);
 				}
 			}
@@ -135,14 +140,17 @@ void PPU::update(size_t ticks)
 					_oamSearchMode.start();
 					_currentLine = 0;
 					_windowLineCounter = 0;
+					_ticks -= _vBlank.getMaxTick();
 					setMode(PPU::Mode::OamSearch);
-				}
-				else
-				{
-					setMode(PPU::Mode::VBlank);
 				}
 			}
 		}
+	}
+	else
+	{
+		_ticks = 0;
+		_mmu.write8(HardwareRegisters::LYC_ADDR, 0);
+		_mmu.write8(HardwareRegisters::STAT_ADDR, _mmu.read8(HardwareRegisters::STAT_ADDR) & ~0x3);
 	}
 }
 
@@ -150,6 +158,7 @@ void PPU::display()
 {
 	_window.draw(_vertices);
 	_window.display();
+	std::cout << "DISPLAY" << std::endl;
 }
 
 void PPU::clear()
@@ -178,22 +187,19 @@ bool PPU::pollEvent(sf::Event& events)
 
 void PPU::draw()
 {
-	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
+	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
 	{
-		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
-		{
-			drawBackground();
+		drawBackground();
 
-			if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_ENABLE_POS))
-			{
-				drawWindow();
-			}
-		}
-
-		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_OBJ_ENABLE_POS))
+		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_ENABLE_POS))
 		{
-			drawSprites();
+			drawWindow();
 		}
+	}
+
+	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_OBJ_ENABLE_POS))
+	{
+		drawSprites();
 	}
 }
 
@@ -381,7 +387,6 @@ sf::Color PPU::getColorFromPalette(uint8_t colorId)
 void PPU::setMode(PPU::Mode mode)
 {
 	_mode = mode;
-	_ticks = 0;
 
 	uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR) & 0b11111100;
 	_mmu.write8(HardwareRegisters::STAT_ADDR, stat | static_cast<uint8_t>(_mode));
