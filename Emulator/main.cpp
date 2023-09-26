@@ -6,6 +6,7 @@
 #include "PPU.hpp"
 #include "MMU.hpp"
 #include "Timer.hpp"
+#include "Input.hpp"
 #include "HardwareRegisters.hpp"
 
 int main(int argc, char* argv[])
@@ -15,6 +16,7 @@ int main(int argc, char* argv[])
     CPU cpu(mmu, interrupts);
     Timer timer(interrupts);
     PPU ppu(mmu, interrupts, 160, 144, 4, 60, "GAME BOY");
+    Input input(mmu);
 
     // Hack until graphics is working
     //mmu.addMemoryOverride(HardwareRegisters::LY_ADDR, MMU::MemoryOverride([]() { return 0x90; }, nullptr));
@@ -28,8 +30,8 @@ int main(int argc, char* argv[])
         [&timer]() { return timer.getTma(); },
         [&timer](uint8_t value) { timer.setTma(value); }));
     mmu.addMemoryOverride(HardwareRegisters::TAC_ADDR, MMU::MemoryOverride(
-        [&timer]() { return timer.getTimerControl(); },
-        [&timer](uint8_t value) { timer.setTimerControl(value); }));
+        [&timer]() { return timer.getTac(); },
+        [&timer](uint8_t value) { timer.setTac(value); }));
     mmu.addMemoryOverride(HardwareRegisters::DMA_ADDR, MMU::MemoryOverride(
         nullptr,
         [&mmu](uint8_t value) {
@@ -39,6 +41,9 @@ int main(int argc, char* argv[])
                 mmu.write8(0xFE00 + i, mmu.read8(sourceAddr + i));
             }
         }));
+    mmu.addMemoryOverride(HardwareRegisters::JOYP_ADDR, MMU::MemoryOverride(
+        [&input]() { return input.read8(); },
+        [&input](uint8_t value) { input.write8(value); }));
 
     //mmu.loadRom(argv[1]);
     while (ppu.isOpen())
@@ -54,8 +59,8 @@ int main(int argc, char* argv[])
 
         size_t ticks = cpu.update();
         timer.update(ticks);
-		
         ppu.update(ticks);
+        input.update();
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }

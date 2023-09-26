@@ -4,6 +4,7 @@
 
 namespace HardwareRegisters
 {
+	static const uint16_t JOYP_ADDR = 0xFF00; // Joypad
 	static const uint16_t SB_ADDR = 0xFF01; // Serial transfer data
 	static const uint16_t SC_ADDR = 0xFF02; // Serial transfer control
 	static const uint16_t DIV_ADDR = 0xFF04; // Divider register

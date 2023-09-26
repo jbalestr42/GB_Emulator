@@ -19,7 +19,7 @@ Timer::Timer(Interrupts& interrupts) :
 
 void Timer::update(size_t ticks)
 {
-	size_t cycles = ticks * TICKS_TO_CYCLES;
+	size_t cycles = ticks;
 	updateDiv(cycles);
 
 	if (_isTimaEnabled)
@@ -32,7 +32,6 @@ void Timer::updateDiv(size_t cycles)
 {
 	// This register is incremented at a rate of 16384Hz. Writing any value to this register resets it to 0x00.
 	// Additionally, this register is reset when executing the stop instruction, and only begins ticking again once stop mode ends.
-
 	_divCycles += cycles;
 
 	if (_divCycles >= DIV_INCREMENT_RATE)
@@ -85,12 +84,12 @@ void Timer::setTima(uint8_t v)
 	_tima = v;
 }
 
-uint8_t Timer::getTimerControl()
+uint8_t Timer::getTac()
 {
 	return 0b11111000 | _timaRateId | _isTimaEnabled << 2;
 }
 
-void Timer::setTimerControl(uint8_t v)
+void Timer::setTac(uint8_t v)
 {
 	_isTimaEnabled = BitUtils::GetBit(v, 2);
 	

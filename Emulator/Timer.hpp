@@ -18,8 +18,8 @@ public:
 	uint16_t getDivRegister();
 	uint16_t getTima();
 	void setTima(uint8_t v);
-	uint8_t getTimerControl();
-	void setTimerControl(uint8_t v);
+	uint8_t getTac();
+	void setTac(uint8_t v);
 	uint8_t getTma();
 	void setTma(uint8_t v);
 

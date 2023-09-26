@@ -111,7 +111,7 @@ size_t CPU::update()
 		else
 		{
 			checkWithLogs();
-			return 1;
+			return 4;
 		}
 	}
 
@@ -150,7 +150,7 @@ size_t CPU::update()
 	}
 	
 	_registers.pc &= 0xFFFF;
-	return instruction.tcycles / 4;
+	return instruction.tcycles;
 }
 
 void CPU::interruptServiceRoutine(uint16_t addr)

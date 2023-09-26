@@ -141,6 +141,7 @@
     <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="Fifo.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Interrupts.cpp" />
     <ClCompile Include="ITickable.hpp" />
     <ClCompile Include="MBC2.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="HardwareRegisters.hpp" />
     <ClInclude Include="HBlankMode.hpp" />
     <ClInclude Include="IMemoryRange.hpp" />
+    <ClInclude Include="Input.hpp" />
     <ClInclude Include="Interrupts.hpp" />
     <ClInclude Include="MBC2.hpp" />
     <ClInclude Include="MBC3.hpp" />
