@@ -456,8 +456,6 @@ void CPU::initInstructions()
 			registers.flags.n = 1;
 			registers.flags.h = ((static_cast<int8_t>(a & 0xF) - static_cast<int8_t>(b & 0xF) - static_cast<int8_t>(registers.flags.c)) < 0);
 			registers.flags.c = a < (b + registers.flags.c);
-			//registers.flags.c = (static_cast<int8_t>(a) - static_cast<int8_t>(b) - static_cast<int8_t>(registers.flags.c)) < 0;
-			//registers.flags.c = r > a;
 			return r; };
 
 		_instructions[0x9F] = OpCode("SBC A,A", 0x9F, 1, 4, {
@@ -586,7 +584,6 @@ void CPU::initInstructions()
 			registers.flags.n = 1;
 			registers.flags.h = ((static_cast<int8_t>(a & 0xF) - static_cast<int8_t>(b & 0xF)) < 0);
 			registers.flags.c = a < b; };
-		//registers.flags.c = r > a; };
 
 		_instructions[0xBF] = OpCode("CP A,A", 0xBF, 1, 4, {
 			[&]() { setCpFlags(_registers, _registers.a, _registers.a); } });
