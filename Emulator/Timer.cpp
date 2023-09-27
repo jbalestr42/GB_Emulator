@@ -9,7 +9,7 @@ const uint16_t Timer::TIMA_INCREMENT_RATES[] = {
 Timer::Timer(Interrupts& interrupts) :
 	_interrupts(interrupts),
 	_divCycles(0),
-	_divRegister(0),
+	_div(0),
 	_isTimaEnabled(false),
 	_timaRateId(0),
 	_timaCycles(0),
@@ -37,7 +37,7 @@ void Timer::updateDiv(size_t cycles)
 	if (_divCycles >= DIV_INCREMENT_RATE)
 	{
 		_divCycles -= DIV_INCREMENT_RATE;
-		_divRegister++;
+		_div++;
 	}
 }
 
@@ -63,15 +63,15 @@ void Timer::updateTima(size_t cycles)
 	}
 }
 
-void Timer::setDivRegister()
+uint16_t Timer::getDiv()
 {
-	_divRegister = 0;
-	_timaCycles = 0;
+	return _div;
 }
 
-uint16_t Timer::getDivRegister()
+void Timer::setDiv()
 {
-	return _divRegister;
+	_div = 0;
+	_timaCycles = 0;
 }
 
 uint16_t Timer::getTima()

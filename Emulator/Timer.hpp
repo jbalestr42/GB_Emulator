@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cstdint>
 #include "CPU.hpp"
 
@@ -14,8 +15,8 @@ public:
 	static const uint16_t TIMA_INCREMENT_RATES[];
 
 	void update(size_t ticks);
-	void setDivRegister();
-	uint16_t getDivRegister();
+	uint16_t getDiv();
+	void setDiv();
 	uint16_t getTima();
 	void setTima(uint8_t v);
 	uint8_t getTac();
@@ -31,7 +32,7 @@ private:
 	Interrupts& _interrupts;
 
 	size_t _divCycles;
-	uint16_t _divRegister;
+	uint16_t _div;
 
 	bool _isTimaEnabled;
 	uint8_t _timaRateId;

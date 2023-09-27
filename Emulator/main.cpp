@@ -18,11 +18,9 @@ int main(int argc, char* argv[])
     PPU ppu(mmu, interrupts, 160, 144, 4, 60, "GAME BOY");
     Input input(mmu);
 
-    // Hack until graphics is working
-    //mmu.addMemoryOverride(HardwareRegisters::LY_ADDR, MMU::MemoryOverride([]() { return 0x90; }, nullptr));
     mmu.addMemoryOverride(HardwareRegisters::DIV_ADDR, MMU::MemoryOverride(
-        [&timer]() { return static_cast<uint8_t>(timer.getDivRegister()); },
-        [&timer](uint8_t value) { timer.setDivRegister(); }));
+        [&timer]() { return static_cast<uint8_t>(timer.getDiv()); },
+        [&timer](uint8_t value) { timer.setDiv(); }));
     mmu.addMemoryOverride(HardwareRegisters::TIMA_ADDR, MMU::MemoryOverride(
         [&timer]() { return static_cast<uint8_t>(timer.getTima()); },
         [&timer](uint8_t value) { timer.setTima(value); }));
