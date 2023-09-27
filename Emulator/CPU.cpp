@@ -123,6 +123,7 @@ size_t CPU::update()
 
 	checkWithLogs();
 
+	_data.overrideCycles = 0;
 	uint8_t opCode = fetchInstruction();
 	bool isPrefixCB = opCode == 0xCB;
 	if (isPrefixCB)
@@ -150,7 +151,7 @@ size_t CPU::update()
 	}
 	
 	_registers.pc &= 0xFFFF;
-	return instruction.tcycles;
+	return instruction.tcycles + _data.overrideCycles;
 }
 
 void CPU::interruptServiceRoutine(uint16_t addr)

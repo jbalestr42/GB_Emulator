@@ -58,6 +58,7 @@ private:
 		uint8_t lsb;
 		uint16_t addr;
 		uint16_t u16;
+		uint8_t overrideCycles;
 	};
 
 	StepData _data;
