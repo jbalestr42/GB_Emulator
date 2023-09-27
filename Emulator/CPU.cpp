@@ -91,12 +91,14 @@ void CPU::checkWithLogs()
 
 size_t CPU::update()
 {
+	_data.overrideCycles = 0;
 	Interrupts::Handler* interruptHandler = _interrupts.handleInterrupts();
 	if (interruptHandler != nullptr)
 	{
 		_halt = false;
 		//std::cout << "stop halt: interrupt service routine" << std::endl;
 		interruptServiceRoutine(interruptHandler->addr);
+		_data.overrideCycles += 20;
 		_interrupts.clearInterrupt(interruptHandler->type);
 		_interrupts.setIme(false);
 	}
@@ -123,7 +125,6 @@ size_t CPU::update()
 
 	checkWithLogs();
 
-	_data.overrideCycles = 0;
 	uint8_t opCode = fetchInstruction();
 	bool isPrefixCB = opCode == 0xCB;
 	if (isPrefixCB)
