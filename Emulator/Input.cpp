@@ -41,13 +41,6 @@ void Input::update()
 
 uint8_t Input::read8()
 {
-	return _joyReg;
-}
-
-void Input::write8(uint8_t v)
-{
-	_joyReg = v | 0b11000000;
-
 	// Directions
 	if (BitUtils::GetBit(_joyReg, 4) == 0)
 	{
@@ -65,4 +58,10 @@ void Input::write8(uint8_t v)
 		_joyReg = BitUtils::SetBit(_joyReg, 1, _inputsState[getValueFromInput(sf::Keyboard::Scan::B)]);
 		_joyReg = BitUtils::SetBit(_joyReg, 0, _inputsState[getValueFromInput(sf::Keyboard::Scan::A)]);
 	}
+	return _joyReg;
+}
+
+void Input::write8(uint8_t v)
+{
+	_joyReg = v | 0b11000000;
 }
