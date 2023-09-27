@@ -21,7 +21,7 @@ Interrupts::Handler* Interrupts::handleInterrupts()
 		uint8_t ieReg = _mmu.read8(HardwareRegisters::IE_ADDR); // Enable interrupt
 		uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR); // Request interrupt
 
-		for (int i = _handlers.size() - 1; i >= 0; i--)
+		for (int i = 0; i < _handlers.size(); i++)
 		{
 			if (BitUtils::GetBit(ieReg, _handlers[i].bit) && BitUtils::GetBit(ifReg, _handlers[i].bit))
 			{
