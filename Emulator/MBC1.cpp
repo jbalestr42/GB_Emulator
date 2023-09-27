@@ -89,7 +89,10 @@ void MBC1::write8(size_t addr, uint8_t v)
 	else if (addr >= 0xA000 && addr <= 0xBFFF && _isRamEnabled)
 	{
 		addr = _bankingMode == 0 ? addr - 0xA000 : addr - 0xA000 + (_ramBankId * Cartridge::RAM_BANK_SIZE);
-		_ram[addr] = v;
+		if (addr < _ram.size())
+		{
+			_ram[addr] = v;
+		}
 	}
 }
 
