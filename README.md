@@ -1,4 +1,4 @@
-Blargg's test coverage:
+[Blargg's test coverage](https://github.com/retrio/gb-test-roms):
 
 | Category            | Test Name                  | Pass/Fail           |
 |---------------------|----------------------------|---------------------|
