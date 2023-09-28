@@ -422,7 +422,6 @@ void CPU::initInstructions()
 			registers.flags.z = r == 0;
 			registers.flags.n = 1;
 			registers.flags.h = ((static_cast<int8_t>(a & 0xF) - static_cast<int8_t>(b & 0xF)) < 0);
-			//registers.flags.c = r > a;
 			registers.flags.c = a < b;
 			return r; };
 

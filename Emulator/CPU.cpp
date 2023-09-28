@@ -69,8 +69,6 @@ size_t CPU::update()
 			_data.overrideCycles += 20;
 			_interrupts.clearInterrupt(interruptHandler->type);
 			_interrupts.setIme(false);
-			std::cout << "tick in halt: " << count << std::endl;
-			count = 0;
 		}
 	}
 
@@ -80,12 +78,9 @@ size_t CPU::update()
 		{
 			//std::cout << "stop halt: pending interrupt" << std::endl;
 			_halt = false;
-			std::cout << "tick in halt: " << count << std::endl;
-			count = 0;
 		}
 		else
 		{
-			count++;
 			return 4;
 		}
 	}

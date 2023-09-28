@@ -70,6 +70,4 @@ private:
 	bool _halt;
 	bool _haltBug;
 	bool _interruptEnableRequest;
-
-	int count = 1;
 };
