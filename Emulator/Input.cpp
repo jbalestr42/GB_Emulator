@@ -41,27 +41,53 @@ void Input::update()
 
 uint8_t Input::read8()
 {
+	uint8_t r = _joyReg | 0b11001111;
+
 	// Directions
 	if (BitUtils::GetBit(_joyReg, 4) == 0)
 	{
-		_joyReg = BitUtils::SetBit(_joyReg, 3, _inputsState[getValueFromInput(sf::Keyboard::Scan::Down)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 2, _inputsState[getValueFromInput(sf::Keyboard::Scan::Up)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 1, _inputsState[getValueFromInput(sf::Keyboard::Scan::Left)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 0, _inputsState[getValueFromInput(sf::Keyboard::Scan::Right)]);
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::Down)])
+		{
+			r &= ~(0xFF & 0x08);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::Up)])
+		{
+			r &= ~(0xFF & 0x04);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::Left)])
+		{
+			r &= ~(0xFF & 0x02);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::Right)])
+		{
+			r &= ~(0xFF & 0x01);
+		}
 	}
 
 	// Actions
 	if (BitUtils::GetBit(_joyReg, 5) == 0)
 	{
-		_joyReg = BitUtils::SetBit(_joyReg, 3, _inputsState[getValueFromInput(sf::Keyboard::Scan::S)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 2, _inputsState[getValueFromInput(sf::Keyboard::Scan::E)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 1, _inputsState[getValueFromInput(sf::Keyboard::Scan::B)]);
-		_joyReg = BitUtils::SetBit(_joyReg, 0, _inputsState[getValueFromInput(sf::Keyboard::Scan::A)]);
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::S)])
+		{
+			r &= ~(0xFF & 0x08);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::E)])
+		{
+			r &= ~(0xFF & 0x04);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::B)])
+		{
+			r &= ~(0xFF & 0x02);
+		}
+		if (_inputsState[getValueFromInput(sf::Keyboard::Scan::A)])
+		{
+			r &= ~(0xFF & 0x01);
+		}
 	}
-	return _joyReg;
+	return r;
 }
 
 void Input::write8(uint8_t v)
 {
-	_joyReg = v | 0b11000000;
+	_joyReg = v & 0b00110000;
 }
