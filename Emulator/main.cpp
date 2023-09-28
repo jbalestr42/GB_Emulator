@@ -1,6 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <chrono>
-#include <thread>
 #include <iostream>
 #include "CPU.hpp"
 #include "PPU.hpp"
@@ -43,7 +41,32 @@ int main(int argc, char* argv[])
         [&input]() { return input.read8(); },
         [&input](uint8_t value) { input.write8(value); }));
 
-    //mmu.loadRom(argv[1]);
+    // Initialize hardware registers when no boot rom is used
+    mmu.write8(HardwareRegisters::JOYP_ADDR, 0xCF);
+    mmu.write8(HardwareRegisters::SB_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::SC_ADDR, 0x7E);
+    mmu.write8(HardwareRegisters::DIV_ADDR, 0xAB);
+    mmu.write8(HardwareRegisters::TIMA_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::TMA_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::TAC_ADDR, 0xF8);
+    mmu.write8(HardwareRegisters::IF_ADDR, 0xE1);
+    mmu.write8(HardwareRegisters::LCDC_ADDR, 0x91);
+    mmu.write8(HardwareRegisters::STAT_ADDR, 0x85);
+    mmu.write8(HardwareRegisters::SCY_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::SCX_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::LY_ADDR, 0x91);
+    mmu.write8(HardwareRegisters::LYC_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::DMA_ADDR, 0xFF);
+    mmu.write8(HardwareRegisters::BGP_ADDR, 0xFC);
+    mmu.write8(HardwareRegisters::WY_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::WX_ADDR, 0x00);
+    mmu.write8(HardwareRegisters::IE_ADDR, 0x00);
+    
+    mmu.loadRom(argv[1]);
+
+    sf::Clock clock;
+    sf::Time time;
+    sf::Time frameDuration = sf::seconds(1.0f / 60.0f);
     while (ppu.isOpen())
     {
         sf::Event event;
@@ -55,12 +78,17 @@ int main(int argc, char* argv[])
             }
         }
 
-        size_t ticks = cpu.update();
-        timer.update(ticks);
-        ppu.update(ticks);
-        input.update();
+        while (time < frameDuration)
+        {
+            time += clock.restart();
 
-		//std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            size_t ticks = cpu.update();
+            timer.update(ticks);
+            ppu.update(ticks);
+
+        }
+        time -= frameDuration;
+        input.update();
     }
 
     return 0;

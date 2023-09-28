@@ -35,10 +35,9 @@ public:
 	virtual bool isInRange(size_t addr) const override;
 	virtual size_t size() const override;
 	virtual const char* name() const override;
+	bool loadRom(const char* path);
 
 	void addMemoryOverride(uint16_t addr, MemoryOverride override);
-
-	static const uint16_t MEMORY_SIZE = 0xFFFF;
 
 private:
 	std::vector<IMemoryRange*> _memoryRanges;

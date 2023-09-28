@@ -6,18 +6,6 @@
 
 MMU::MMU()
 {
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Super Mario Land (World).gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\cpu_instrs\\cpu_instrs.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_bank1.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_bank2.gb");
-	_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\bits_mode.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\emulator-only\\mbc1\\ram_64kb.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\MoonEye\\acceptance\\bits\\reg_f.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\cpu_instrs\\individual\\11-op a,(hl).gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\dmg-acid2.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Tetris.gb");
-	//_cartridge.loadRom("C:\\Users\\julie\\Documents\\GitHub\\GB_Emulator\\ROMS\\Dr. Mario (World).gb");
-
 	// 0000 - 3FFF | 16 KiB ROM bank 00 | From cartridge, usually a fixed bank
 	// 4000 - 7FFF | 16 KiB ROM Bank 01~NN | From cartridge, switchable bank via mapper (if any)
 	_memoryRanges.push_back(_cartridge.createMBC());
@@ -39,8 +27,6 @@ MMU::MMU()
 	_memoryRanges.push_back(new MemoryRange("HRAM", 0xFF80, 0xFFFE));
 	// FFFF - FFFF | Interrupt Enable register (IE)
 	_memoryRanges.push_back(new MemoryRange("IE Register", 0xFFFF, 0xFFFF));
-
-	//dump();
 }
 
 MMU::~MMU()
@@ -55,7 +41,6 @@ uint8_t MMU::read8(size_t addr)
 {
 	if (_memoryOverride.count(addr) != 0 && _memoryOverride[addr].read8 != nullptr)
 	{
-		//std::cout << "override read8 " << std::hex << addr << std::endl;
 		return _memoryOverride[addr].read8();
 	}
 
@@ -67,7 +52,6 @@ uint8_t MMU::read8(size_t addr)
 		}
 	}
 
-	//std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
 	return 0xFF;
 }
 
@@ -75,7 +59,6 @@ void MMU::write8(size_t addr, uint8_t v)
 {
 	if (_memoryOverride.count(addr) != 0 && _memoryOverride[addr].write8 != nullptr)
 	{
-		//std::cout << "override write8 " << std::hex << addr << " " << (int)v << std::endl;
 		_memoryOverride[addr].write8(v);
 	}
 	else
@@ -88,8 +71,6 @@ void MMU::write8(size_t addr, uint8_t v)
 				return;
 			}
 		}
-		//std::cout << "No address range found for addr: " << std::hex << addr << std::endl;
-		//_memory[addr] = v;
 	}
 }
 
@@ -123,6 +104,11 @@ const char* MMU::name() const
 void MMU::addMemoryOverride(uint16_t addr, MemoryOverride override)
 {
 	_memoryOverride[addr] = override;
+}
+
+bool MMU::loadRom(const char* path)
+{
+	return _cartridge.loadRom(path);
 }
 
 void MMU::dump()
