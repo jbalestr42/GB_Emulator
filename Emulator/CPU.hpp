@@ -39,7 +39,7 @@ private:
 
 public:
 	CPU(MMU& mmu, Interrupts& interrupts);
-	~CPU();
+	~CPU() = default;
 
 	void initInstructions();
 	uint8_t fetchInstruction();
@@ -50,7 +50,6 @@ public:
 
 private:
 	void interruptServiceRoutine(uint16_t addr);
-	void checkWithLogs();
 
 	struct StepData
 	{
@@ -73,6 +72,4 @@ private:
 	bool _interruptEnableRequest;
 
 	int count = 1;
-	std::ofstream logfile;
-	std::ifstream cmpfile;
 };

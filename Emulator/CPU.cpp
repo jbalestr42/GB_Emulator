@@ -29,16 +29,8 @@ CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_registers.flags.c = 1;
 	_registers.af();
 	initInstructions();
-
-	logfile.open("log.txt");
-	cmpfile.open("LogsCmp\\Blargg11LYStubbed.txt", std::ifstream::in);
 }
 
-CPU::~CPU()
-{
-	logfile.close();
-	cmpfile.close();
-}
 
 uint8_t CPU::fetchInstruction()
 {
@@ -63,33 +55,6 @@ CPU::OpCode & CPU::disassembleInstruction(uint8_t opCode, bool isPrefixCB)
 	return _instructions[opCode];
 }
 
-void CPU::checkWithLogs()
-{
-	return;
-	if (_registers.pc >= 0x100)
-	{
-		std::stringstream ss;
-		ss << _registers.ToString() << " (" << std::hex << std::uppercase << std::setfill('0') << std::setw(2) << (int)_mmu.read8(_registers.pc) << " " << std::setfill('0') << std::setw(2) << (int)_mmu.read8(_registers.pc + 1) << " " << std::setfill('0') << std::setw(2) << (int)_mmu.read8(_registers.pc + 2) << " " << std::setfill('0') << std::setw(2) << (int)_mmu.read8(_registers.pc + 3) << ")";
-		//std::cout << std::dec << i << " " << ss.str() << std::endl;
-		//logfile << ss.str() << std::endl;
-
-		std::string line;
-		std::getline(cmpfile, line);
-		if (line == "")
-		{
-			std::cout << "File empty" << std::endl;
-		}
-		if (line != ss.str())
-		{
-			std::cout << "Diff at line : " << std::dec << count << std::endl;
-			std::cout << ss.str() << std::endl;
-			std::cout << line << std::endl;
-			//_mmu.dump();
-		}
-		count++;
-	}
-}
-
 size_t CPU::update()
 {
 	_data.overrideCycles = 0;
@@ -104,6 +69,8 @@ size_t CPU::update()
 			_data.overrideCycles += 20;
 			_interrupts.clearInterrupt(interruptHandler->type);
 			_interrupts.setIme(false);
+			std::cout << "tick in halt: " << count << std::endl;
+			count = 0;
 		}
 	}
 
@@ -113,10 +80,12 @@ size_t CPU::update()
 		{
 			//std::cout << "stop halt: pending interrupt" << std::endl;
 			_halt = false;
+			std::cout << "tick in halt: " << count << std::endl;
+			count = 0;
 		}
 		else
 		{
-			checkWithLogs();
+			count++;
 			return 4;
 		}
 	}
@@ -126,8 +95,6 @@ size_t CPU::update()
 		_interrupts.setIme(true);
 		_interruptEnableRequest = false;
 	}
-
-	checkWithLogs();
 
 	uint8_t opCode = fetchInstruction();
 	bool isPrefixCB = opCode == 0xCB;
