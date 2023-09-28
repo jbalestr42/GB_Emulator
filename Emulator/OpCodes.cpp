@@ -765,7 +765,7 @@ void CPU::initInstructions()
 		_instructions[0x00] = OpCode("NOP", 0x00, 1, 4, {
 				[&]() {} });
 		_instructions[0x76] = OpCode("HALT", 0x76, 1, 4, {
-				[&]() { _halt = true; } });
+				[&]() { if (_interrupts.isHaltBug()) _haltBug = true; else _halt = true; } });
 		_instructions[0x10] = OpCode("STOP", 0x10, 1, 4, {
 				[&]() { _registers.pc++; } });
 		_instructions[0xF3] = OpCode("DI", 0xF3, 1, 4, {

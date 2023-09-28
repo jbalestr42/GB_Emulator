@@ -35,11 +35,12 @@ public:
 
 	void setIme(bool ime) { _ime = ime; }
 	bool getIme() const { return _ime; }
+	bool isHaltBug() const;
 
 	Interrupts::Handler* handleInterrupts();
 	void raiseInterrupt(Interrupts::Type type);
 	void clearInterrupt(Interrupts::Type type);
-	bool hasPendingInterrupts();
+	bool hasPendingInterrupts() const;
 
 private:
 	MMU& _mmu;

@@ -16,17 +16,14 @@ Interrupts::Interrupts(MMU& mmu) :
 
 Interrupts::Handler* Interrupts::handleInterrupts()
 {
-	if (_ime)
-	{
-		uint8_t ieReg = _mmu.read8(HardwareRegisters::IE_ADDR); // Enable interrupt
-		uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR); // Request interrupt
+	uint8_t ieReg = _mmu.read8(HardwareRegisters::IE_ADDR); // Enable interrupt
+	uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR); // Request interrupt
 
-		for (int i = 0; i < _handlers.size(); i++)
+	for (size_t i = 0; i < _handlers.size(); i++)
+	{
+		if (BitUtils::GetBit(ieReg, _handlers[i].bit) && BitUtils::GetBit(ifReg, _handlers[i].bit))
 		{
-			if (BitUtils::GetBit(ieReg, _handlers[i].bit) && BitUtils::GetBit(ifReg, _handlers[i].bit))
-			{
-				return &_handlers[i];
-			}
+			return &_handlers[i];
 		}
 	}
 	return nullptr;
@@ -46,9 +43,14 @@ void Interrupts::clearInterrupt(Interrupts::Type type)
 	_mmu.write8(HardwareRegisters::IF_ADDR, BitUtils::UnsetBit(ifReg, _handlers[static_cast<size_t>(type)].bit));
 }
 
-bool Interrupts::hasPendingInterrupts()
+bool Interrupts::hasPendingInterrupts() const
 {
 	uint8_t ieReg = _mmu.read8(HardwareRegisters::IE_ADDR);
 	uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR);
-	return (ieReg & ifReg) != 0;
+	return (ieReg & ifReg & 0x1F) != 0;
+}
+
+bool Interrupts::isHaltBug() const
+{
+	return hasPendingInterrupts() && !_ime;
 }

@@ -10,6 +10,7 @@ CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_mmu(mmu),
 	_interrupts(interrupts),
 	_halt(false),
+	_haltBug(false),
 	_interruptEnableRequest(false)
 {
 	_registers.a = 0x01;
@@ -95,12 +96,15 @@ size_t CPU::update()
 	Interrupts::Handler* interruptHandler = _interrupts.handleInterrupts();
 	if (interruptHandler != nullptr)
 	{
-		_halt = false;
-		//std::cout << "stop halt: interrupt service routine" << std::endl;
-		interruptServiceRoutine(interruptHandler->addr);
-		_data.overrideCycles += 20;
-		_interrupts.clearInterrupt(interruptHandler->type);
-		_interrupts.setIme(false);
+		if (_interrupts.getIme())
+		{
+			_halt = false;
+			//std::cout << "stop halt: interrupt service routine" << std::endl;
+			interruptServiceRoutine(interruptHandler->addr);
+			_data.overrideCycles += 20;
+			_interrupts.clearInterrupt(interruptHandler->type);
+			_interrupts.setIme(false);
+		}
 	}
 
 	if (_halt)
@@ -132,6 +136,12 @@ size_t CPU::update()
 		opCode = fetchInstruction();
 	}
 	OpCode & instruction = disassembleInstruction(opCode, isPrefixCB);
+
+	if (_haltBug)
+	{
+		_registers.pc--;
+		_haltBug = false;
+	}
 
 	for (size_t i = 0; i < instruction.steps.size(); i++)
 	{

@@ -69,6 +69,7 @@ private:
 	std::map<uint8_t, OpCode> _instructions;
 	std::map<uint8_t, OpCode> _instructionsCB;
 	bool _halt;
+	bool _haltBug;
 	bool _interruptEnableRequest;
 
 	int count = 1;
