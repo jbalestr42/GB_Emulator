@@ -136,7 +136,6 @@ void PPU::display()
 {
 	_window.draw(_vertices);
 	_window.display();
-	std::cout << "DISPLAY" << std::endl;
 }
 
 void PPU::clear()
@@ -203,12 +202,12 @@ void PPU::drawBackground()
 		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
 		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
 		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
-		uint8_t colorValue = (msb << 1) | lsb;
+		uint8_t colorId = (msb << 1) | lsb;
 		uint8_t palette = _mmu.read8(HardwareRegisters::BGP_ADDR);
 
-		colorValue = (palette >> (colorValue * 2)) & 0x3;
+		uint8_t color = (palette >> (colorId * 2)) & 0x3;
 
-		sf::Color c = getColorFromPalette(colorValue);
+		sf::Color c = getColorFromPalette(color);
 		sf::Vertex* quad = &_vertices[(x + _currentLine * _width) * 4];
 		quad[0].color = c;
 		quad[1].color = c;
@@ -245,12 +244,12 @@ void PPU::drawWindow()
 		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
 		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
 		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
-		uint8_t colorValue = (msb << 1) | lsb;
+		uint8_t colorId = (msb << 1) | lsb;
 		uint8_t palette = _mmu.read8(HardwareRegisters::BGP_ADDR);
 
-		colorValue = (palette >> (colorValue * 2)) & 0x3;
+		uint8_t color = (palette >> (colorId * 2)) & 0x3;
 
-		sf::Color c = getColorFromPalette(colorValue);
+		sf::Color c = getColorFromPalette(color);
 		sf::Vertex* quad = &_vertices[(x + _currentLine * _width) * 4];
 		quad[0].color = c;
 		quad[1].color = c;
@@ -317,18 +316,19 @@ void PPU::drawSprites()
 			uint16_t tileAddr = PPU::VRAM_TILEDATA_0_ADDR + PPU::BYTES_PER_TILE * tileId;
 			uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2), 7 - xTileCoord);
 			uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2 + 1), 7 - xTileCoord);
-			uint8_t colorValue = (msb << 1) | lsb;
+			uint8_t colorId = (msb << 1) | lsb;
 
 			uint16_t paletteAddr = sprite.paletteId ? HardwareRegisters::OBP1_ADDR : HardwareRegisters::OBP0_ADDR;
 			uint8_t palette = _mmu.read8(paletteAddr);
 
-			colorValue = (palette >> (colorValue * 2)) & 0x3;
+			uint8_t color = (palette >> (colorId * 2)) & 0x3;
+			bool isPixelVisible = colorId != 0;
 			sf::Vertex* quad = &_vertices[(xScreenCoord + _currentLine * _width) * 4];
 
 			bool shouldRenderPixel = !sprite.isBgAndWinOver || quad[0].color == sf::Color::White;
-			if (colorValue != 0 && shouldRenderPixel) // 0 is transparent
+			if (isPixelVisible && shouldRenderPixel) // 0 is transparent
 			{
-				sf::Color c = getColorFromPalette(colorValue);
+				sf::Color c = getColorFromPalette(color);
 				quad[0].color = c;
 				quad[1].color = c;
 				quad[2].color = c;
