@@ -55,7 +55,7 @@ void PPU::update(size_t ticks)
 		uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
 		uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
 		uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR);
-		_mmu.write8(HardwareRegisters::STAT_ADDR, BitUtils::SetBit(stat, 6, ly == lyc));
+		_mmu.write8(HardwareRegisters::STAT_ADDR, BitUtils::SetBit(stat, 2, ly == lyc));
 
 		if (ly == lyc && isLYLYCInterruptEnabled() && !_lycInterruptRaiseDuringRendering)
 		{
@@ -63,27 +63,27 @@ void PPU::update(size_t ticks)
 			_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 		}
 
-		if (_mode == PPU::Mode::OamSearch && _ticks >= _oamSearchMode.getMaxTick())
+		if (_mode == PPU::Mode::OamSearch && _ticks >= 80)
 		{
-			_ticks -= _oamSearchMode.getMaxTick();
+			_ticks -= 80;
 			setMode(PPU::Mode::PixelTransfer);
 		}
-		else if (_mode == PPU::Mode::PixelTransfer && _ticks >= _pixelTransferMode.getMaxTick())
+		else if (_mode == PPU::Mode::PixelTransfer && _ticks >= 172)
 		{
 			if (isHBlankInterruptEnabled())
 			{
 				_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 			}
-			_ticks -= _pixelTransferMode.getMaxTick();
+			_ticks -= 172;
 			setMode(PPU::Mode::HBlank);
 			draw();
 			//std::cout << "draw line  " << (int)_currentLine << std::endl;
 		}
-		else if (_mode == PPU::Mode::HBlank && _ticks >= _hBlank.getMaxTick())
+		else if (_mode == PPU::Mode::HBlank && _ticks >= 204)
 		{
-			_lycInterruptRaiseDuringRendering = false;
 			_currentLine++;
-			_ticks -= _hBlank.getMaxTick();
+			_lycInterruptRaiseDuringRendering = false;
+			_ticks -= 204;
 			if (_currentLine == 144)
 			{
 				if (isVBlankInterruptEnabled())
@@ -105,10 +105,10 @@ void PPU::update(size_t ticks)
 				setMode(PPU::Mode::OamSearch);
 			}
 		}
-		else if (_mode == PPU::Mode::VBlank && _ticks >= _vBlank.getMaxTick())
+		else if (_mode == PPU::Mode::VBlank && _ticks >= 456)
 		{
 			_currentLine++;
-			_ticks -= _vBlank.getMaxTick();
+			_ticks -= 456;
 			if (_currentLine > 153)
 			{
 				if (isOamInterruptEnabled())
@@ -116,9 +116,9 @@ void PPU::update(size_t ticks)
 					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 				}
 				_oamSearchMode.start();
+				setMode(PPU::Mode::OamSearch);
 				_currentLine = 0;
 				_windowLineCounter = 0;
-				setMode(PPU::Mode::OamSearch);
 			}
 			_lycInterruptRaiseDuringRendering = false;
 		}
@@ -367,7 +367,7 @@ void PPU::setMode(PPU::Mode mode)
 	_mode = mode;
 
 	uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR) & 0b11111100;
-	_mmu.write8(HardwareRegisters::STAT_ADDR, (stat & ~0x3) | static_cast<uint8_t>(_mode));
+	_mmu.write8(HardwareRegisters::STAT_ADDR, stat | static_cast<uint8_t>(_mode));
 }
 
 void PPU::putPixel(uint8_t color, uint8_t x, uint8_t y)
