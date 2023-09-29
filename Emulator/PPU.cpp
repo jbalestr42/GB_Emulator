@@ -50,7 +50,7 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 void PPU::update(size_t ticks)
 {
 	_ticks += ticks;
-	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
+	//if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
 	{
 		uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
 		uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
@@ -124,12 +124,6 @@ void PPU::update(size_t ticks)
 		}
 		_mmu.write8(HardwareRegisters::LY_ADDR, _currentLine);
 	}
-	else
-	{
-		_ticks = 0;
-		_mmu.write8(HardwareRegisters::LY_ADDR, 0);
-		_mmu.write8(HardwareRegisters::STAT_ADDR, _mmu.read8(HardwareRegisters::STAT_ADDR) & ~0x3);
-	}
 }
 
 void PPU::display()
@@ -164,19 +158,22 @@ bool PPU::pollEvent(sf::Event& events)
 
 void PPU::draw()
 {
-	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
+	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
 	{
-		drawBackground();
-
-		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_ENABLE_POS))
+		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_PRIORITY_ENABLE_POS))
 		{
-			drawWindow();
-		}
-	}
+			drawBackground();
 
-	if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_OBJ_ENABLE_POS))
-	{
-		drawSprites();
+			if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_WIN_ENABLE_POS))
+			{
+				drawWindow();
+			}
+		}
+
+		if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_OBJ_ENABLE_POS))
+		{
+			drawSprites();
+		}
 	}
 }
 
