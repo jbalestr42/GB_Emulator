@@ -127,7 +127,7 @@ void PPU::update(size_t ticks)
 	else
 	{
 		_ticks = 0;
-		_mmu.write8(HardwareRegisters::LYC_ADDR, 0);
+		_mmu.write8(HardwareRegisters::LY_ADDR, 0);
 		_mmu.write8(HardwareRegisters::STAT_ADDR, _mmu.read8(HardwareRegisters::STAT_ADDR) & ~0x3);
 	}
 }
