@@ -44,23 +44,6 @@
 | Timer            | Tima reload       | :x:                |
 | Timer            | Tima write reloa. | :x:                |
 | Timer            | Tma write reload. | :x:                |
-| MBC 1            | bits_bank_1       | :white_check_mark: |
-| MBC 1            | bits_bank_2       | :white_check_mark: |
-| MBC 1            | bits_mode         | :white_check_mark: |
-| MBC 1            | bits_ramg         | :white_check_mark: |
-| MBC 1            | multicart_rom_8Mb | :x:                |
-| MBC 1            | ram_64kb          | :white_check_mark: |
-| MBC 1            | ram_256kb         | :white_check_mark: |
-| MBC 1            | rom_512kb         | :white_check_mark: |
-| MBC 1            | rom_1Mb           | :white_check_mark: |
-| MBC 1            | rom_2Mb           | :white_check_mark: |
-| MBC 1            | rom_4Mb           | :white_check_mark: |
-| MBC 1            | rom_8Mb           | :white_check_mark: |
-| MBC 1            | rom_16Mb          | :white_check_mark: |
-| MBC 2            | bits_ramg         | :white_check_mark: |
-| MBC 2            | bits_romb         | :white_check_mark: |
-| MBC 2            | bits_unused       | :white_check_mark: |
-| MBC 2            | ram               | :white_check_mark: |
-| MBC 2            | rom_512kb         | :white_check_mark: |
-| MBC 2            | rom_1Mb           | :white_check_mark: |
-| MBC 2            | rom_2Mb           | :white_check_mark: |
+| MBC 1            | all but multicart | :white_check_mark: |
+| MBC 2            | all testes        | :white_check_mark: |
+| MBC 5            | all testes        | :white_check_mark: |

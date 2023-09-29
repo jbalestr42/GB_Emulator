@@ -4,6 +4,7 @@
 #include "MBC1.hpp"
 #include "MBC2.hpp"
 #include "MBC3.hpp"
+#include "MBC5.hpp"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -40,7 +41,8 @@ void Cartridge::init()
 {
 	_title = (char*)&_data[Cartridge::TITLE_ADDR];
 	_type = getRomTypeFromId(read8(Cartridge::CARTRIDGE_TYPE_ADDR));
-	_romSize = 32768 * (1 << read8(Cartridge::ROM_SIZE_ADDR));
+	uint8_t romSizeId = read8(Cartridge::ROM_SIZE_ADDR);
+	_romSize = 32768 * (1 << romSizeId);
 
 	std::array<size_t, 6> ramSize = { 0, 0, 8192, 32768, 131072, 65536 };
 	_ramSize = hasRam() ? ramSize[read8(Cartridge::RAM_SIZE_ADDR)] : 0;
@@ -185,6 +187,13 @@ IMemoryRange* Cartridge::createMBC()
 	case Cartridge::MBC_3_RAM:
 	case Cartridge::MBC_3_RAM_BATTERY:
 		return new MBC3(*this);
+	case Cartridge::MBC_5:
+	case Cartridge::MBC_5_RAM:
+	case Cartridge::MBC_5_RAM_BATTERY:
+	case Cartridge::MBC_5_RUMBLE:
+	case Cartridge::MBC_5_RUMBLE_RAM:
+	case Cartridge::MBC_5_RUMBLE_RAM_BATTERY:
+		return new MBC5(*this);
 	default:
 		std::cout << "MBC type '" << _type << "' not managed. Using MBCRomOnly" << std::endl;
 		return new MBCRomOnly(*this);

@@ -111,6 +111,9 @@
     <ClCompile Include="Input.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="MBC5.cpp">
+      <Filter>Fichiers sources\MMU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PPUMode.hpp">
@@ -178,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="Input.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC5.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
