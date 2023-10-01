@@ -10,7 +10,7 @@ public:
 	Input(MMU& mmu);
 	~Input() = default;
 
-	void update();
+	void tick();
 	uint8_t read8();
 	void write8(uint8_t v);
 	std::uint8_t getValueFromInput(sf::Keyboard::Scan::Scancode scanCode);

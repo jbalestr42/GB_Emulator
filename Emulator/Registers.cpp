@@ -1,4 +1,5 @@
 #include "Registers.hpp"
+#include "BitUtils.hpp"
 #include <sstream>
 #include <iomanip>
 
@@ -80,7 +81,6 @@ std::string Registers::ToString()
 
 bool Registers::Flags::HalfCarry8(uint8_t a, uint8_t b)
 {
-	// (a ^ b ^ result) & 0x10
 	return ((a & 0xF) + (b & 0xF)) >= 0x10;
 }
 

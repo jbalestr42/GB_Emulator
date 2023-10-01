@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "MMU.hpp"
+
+class MMU;
 
 class Interrupts
 {

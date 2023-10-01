@@ -1,7 +1,6 @@
 #include "MBC2.hpp"
 #include "Cartridge.hpp"
 #include <math.h>
-#include <iostream>
 
 MBC2::MBC2(Cartridge& cartridge) :
 	_cartridge(cartridge),

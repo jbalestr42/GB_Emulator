@@ -140,10 +140,8 @@
     <ClCompile Include="BitUtils.cpp" />
     <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="CPU.cpp" />
-    <ClCompile Include="Fifo.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Interrupts.cpp" />
-    <ClCompile Include="ITickable.hpp" />
     <ClCompile Include="MBC2.cpp" />
     <ClCompile Include="MBC3.cpp" />
     <ClCompile Include="MBC5.cpp" />
@@ -152,22 +150,17 @@
     <ClCompile Include="MemoryRange.cpp" />
     <ClCompile Include="OamSearchMode.cpp" />
     <ClCompile Include="OpCodes.cpp" />
-    <ClCompile Include="PixelFetcher.cpp" />
-    <ClCompile Include="PixelTransferMode.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MMU.cpp" />
     <ClCompile Include="Registers.cpp" />
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="VBlankMode.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitUtils.hpp" />
     <ClInclude Include="Cartridge.hpp" />
     <ClInclude Include="CPU.hpp" />
-    <ClInclude Include="Fifo.hpp" />
     <ClInclude Include="HardwareRegisters.hpp" />
-    <ClInclude Include="HBlankMode.hpp" />
     <ClInclude Include="IMemoryRange.hpp" />
     <ClInclude Include="Input.hpp" />
     <ClInclude Include="Interrupts.hpp" />
@@ -178,11 +171,8 @@
     <ClInclude Include="MBC1.hpp" />
     <ClInclude Include="MemoryRange.hpp" />
     <ClInclude Include="OamSearchMode.hpp" />
-    <ClInclude Include="PixelFetcher.hpp" />
-    <ClInclude Include="PixelTransferMode.hpp" />
     <ClInclude Include="PPU.hpp" />
     <ClInclude Include="MMU.hpp" />
-    <ClInclude Include="PPUMode.hpp" />
     <ClInclude Include="Registers.hpp" />
     <ClInclude Include="Timer.hpp" />
   </ItemGroup>

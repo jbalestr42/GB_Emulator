@@ -2,13 +2,10 @@
 
 #include <SFML\Graphics.hpp>
 #include <cstdint>
-#include "CPU.hpp"
-#include "PixelFetcher.hpp"
-#include "PPUMode.hpp"
 #include "OamSearchMode.hpp"
-#include "PixelTransferMode.hpp"
-#include "HBlankMode.hpp"
-#include "VBlankMode.hpp"
+
+class MMU;
+class Interrupts;
 
 class PPU
 {
@@ -24,7 +21,7 @@ public:
 	PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title);
 	~PPU() = default;
 
-	void update(size_t ticks);
+	void tick();
 	void display();
 	void clear();
 	void close();
@@ -74,9 +71,6 @@ private:
 
 	PPU::Mode _mode;
 	OamSearchMode _oamSearchMode;
-	PixelTransferMode _pixelTransferMode;
-	HBlankMode _hBlank;
-	VBlankMode _vBlank;
 	size_t _ticks;
 	uint8_t _currentLine;
 	uint8_t _windowLineCounter;

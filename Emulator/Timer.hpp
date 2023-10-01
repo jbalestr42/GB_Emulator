@@ -10,7 +10,7 @@ public:
 	Timer(Interrupts& interrupts);
 	~Timer() = default;
 
-	void update(size_t ticks);
+	void tick();
 	uint8_t getDiv();
 	void setDiv();
 	uint8_t getTima();

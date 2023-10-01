@@ -19,12 +19,6 @@
     <Filter Include="Fichiers d%27en-tête\PPU">
       <UniqueIdentifier>{498ad7de-06e9-4521-8043-c8e6e94404bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers d%27en-tête\PPU\PPUModes">
-      <UniqueIdentifier>{3e821235-d816-4929-99e9-827f22881dd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Fichiers sources\PPU\PPUModes">
-      <UniqueIdentifier>{48298f13-9891-4dde-aec8-566697f46003}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Fichiers d%27en-tête\CPU">
       <UniqueIdentifier>{f3c8ff40-b524-4d03-88c8-46bc4e8a8b3a}</UniqueIdentifier>
     </Filter>
@@ -48,15 +42,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="OamSearchMode.cpp">
-      <Filter>Fichiers sources\PPU\PPUModes</Filter>
-    </ClCompile>
-    <ClCompile Include="VBlankMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
-    </ClCompile>
-    <ClCompile Include="PixelTransferMode.cpp">
-      <Filter>Fichiers sources\PPU\PPUModes</Filter>
-    </ClCompile>
     <ClCompile Include="MMU.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
@@ -69,17 +54,8 @@
     <ClCompile Include="MemoryRange.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
-    <ClCompile Include="Fifo.cpp">
-      <Filter>Fichiers sources\PPU</Filter>
-    </ClCompile>
-    <ClCompile Include="PixelFetcher.cpp">
-      <Filter>Fichiers sources\PPU</Filter>
-    </ClCompile>
     <ClCompile Include="PPU.cpp">
       <Filter>Fichiers sources\PPU</Filter>
-    </ClCompile>
-    <ClCompile Include="ITickable.hpp">
-      <Filter>Fichiers d%27en-tête\CPU</Filter>
     </ClCompile>
     <ClCompile Include="CPU.cpp">
       <Filter>Fichiers sources\CPU</Filter>
@@ -108,26 +84,17 @@
     <ClCompile Include="MBC3.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="MBC5.cpp">
       <Filter>Fichiers sources\MMU</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Fichiers sources\CPU</Filter>
+    </ClCompile>
+    <ClCompile Include="OamSearchMode.cpp">
+      <Filter>Fichiers sources\PPU</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PPUMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
-    </ClInclude>
-    <ClInclude Include="HBlankMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
-    </ClInclude>
-    <ClInclude Include="OamSearchMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
-    </ClInclude>
-    <ClInclude Include="PixelTransferMode.hpp">
-      <Filter>Fichiers d%27en-tête\PPU\PPUModes</Filter>
-    </ClInclude>
     <ClInclude Include="MMU.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
@@ -143,13 +110,7 @@
     <ClInclude Include="IMemoryRange.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
-    <ClInclude Include="Fifo.hpp">
-      <Filter>Fichiers d%27en-tête\PPU</Filter>
-    </ClInclude>
     <ClInclude Include="PPU.hpp">
-      <Filter>Fichiers d%27en-tête\PPU</Filter>
-    </ClInclude>
-    <ClInclude Include="PixelFetcher.hpp">
       <Filter>Fichiers d%27en-tête\PPU</Filter>
     </ClInclude>
     <ClInclude Include="CPU.hpp">
@@ -179,11 +140,14 @@
     <ClInclude Include="MBC3.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
-    <ClInclude Include="Input.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="MBC5.hpp">
       <Filter>Fichiers d%27en-tête\MMU</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.hpp">
+      <Filter>Fichiers d%27en-tête\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="OamSearchMode.hpp">
+      <Filter>Fichiers d%27en-tête\PPU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

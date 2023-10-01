@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PPUMode.hpp"
+#include <cstdint>
 
 class MMU;
 
-class OamSearchMode : public PPUMode
+class OamSearchMode
 {
 public:
 	struct Sprite
@@ -23,9 +23,6 @@ public:
 	~OamSearchMode() = default;
 
 	void start();
-	void tick(size_t ticks) override;
-	void tickAll();
-	uint16_t getMaxTick() const override { return 80; }
 	Sprite* getSprites() { return _sprites; }
 	uint8_t getSpriteCount() const { return _currentSprite; }
 
@@ -33,16 +30,7 @@ public:
 	static const uint16_t VRAM_OAM_ADDR = 0xFE00;
 
 private:
-	enum State
-	{
-		ReadY,
-		ReadX
-	};
-
-	uint8_t getSpriteHeight() const;
-
 	MMU& _mmu;
-	State _state;
 	uint8_t _currentSprite;
 	Sprite _sprites[40];
 };

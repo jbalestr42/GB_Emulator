@@ -1,8 +1,6 @@
 #include "Input.hpp"
-#include "HardwareRegisters.hpp"
 #include "MMU.hpp"
 #include "BitUtils.hpp"
-#include <iostream>
 
 Input::Input(MMU& mmu) :
 	_mmu(mmu),
@@ -31,7 +29,7 @@ std::uint8_t Input::getValueFromInput(sf::Keyboard::Scan::Scancode scanCode)
 	return 0;
 }
 
-void Input::update()
+void Input::tick()
 {
 	for (size_t i = 0; i < Input::InputCount; i++)
 	{

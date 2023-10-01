@@ -4,13 +4,21 @@
 #include <vector>
 #include <functional>
 #include <fstream>
-#include "MMU.hpp"
 #include "BitUtils.hpp"
-#include "Interrupts.hpp"
 #include "Registers.hpp"
+
+class MMU;
+class Interrupts;
 
 class CPU
 {
+public:
+	CPU(MMU& mmu, Interrupts& interrupts);
+	~CPU() = default;
+
+	void tick();
+	static const int CLOCK_FREQUENCY_HZ = 4194304;
+
 private:
 	struct OpCode
 	{
@@ -63,14 +71,6 @@ private:
 
 	static const uint16_t START_PC_ADDR = 0x0100;
 
-public:
-	CPU(MMU& mmu, Interrupts& interrupts);
-	~CPU() = default;
-
-	void tick();
-	static const int CLOCK_FREQUENCY_HZ = 4194304;
-
-private:
 	void initInstructions();
 	CPU::OpCode* interruptServiceRoutine(uint16_t addr);
 

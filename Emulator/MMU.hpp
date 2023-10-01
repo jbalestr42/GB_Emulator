@@ -5,7 +5,6 @@
 #include <map>
 #include <vector>
 #include "Cartridge.hpp"
-#include "MMU.hpp"
 #include "MemoryRange.hpp"
 
 class MMU : public IMemoryRange
@@ -28,8 +27,6 @@ public:
 	MMU();
 	~MMU();
 
-	void dump();
-
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
 	virtual bool isInRange(size_t addr) const override;
@@ -37,6 +34,7 @@ public:
 	virtual const char* name() const override;
 	bool loadRom(const char* path);
 
+	void dump();
 	void addMemoryOverride(uint16_t addr, MemoryOverride override);
 
 private:

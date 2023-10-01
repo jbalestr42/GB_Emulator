@@ -14,9 +14,9 @@ Timer::Timer(Interrupts& interrupts) :
 	_ticksSinceOverflow(0)
 { }
 
-void Timer::update(size_t ticks)
+void Timer::tick()
 {
-	updateDiv((_div + ticks) & 0xFFFF);
+	updateDiv((_div + 1) & 0xFFFF);
 	if (!_overflow)
 	{
 		return;

@@ -1,17 +1,14 @@
 #include "PPU.hpp"
 #include "HardwareRegisters.hpp"
-#include "HBlankMode.hpp"
-#include "VBlankMode.hpp"
-#include "PixelTransferMode.hpp"
-#include "OamSearchMode.hpp"
-#include <iostream>
+#include "Interrupts.hpp"
+#include "BitUtils.hpp"
+#include "MMU.hpp"
 
 PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title) :
 	_mmu(mmu),
 	_interrupts(interrupts),
 	_mode(PPU::Mode::OamSearch),
 	_oamSearchMode(mmu),
-	_pixelTransferMode(mmu, *this),
 	_ticks(0),
 	_currentLine(0),
 	_windowLineCounter(0),
@@ -47,83 +44,78 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 	_oamSearchMode.start();
 }
 
-void PPU::update(size_t ticks)
+void PPU::tick()
 {
-	_ticks += ticks;
-	//if (BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_LCD_PPU_ENABLE_POS))
-	{
-		uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
-		uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
-		uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR);
-		_mmu.write8(HardwareRegisters::STAT_ADDR, BitUtils::SetBit(stat, 2, ly == lyc));
+	_ticks++;
+	uint8_t ly = _mmu.read8(HardwareRegisters::LY_ADDR);
+	uint8_t lyc = _mmu.read8(HardwareRegisters::LYC_ADDR);
+	uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR);
+	_mmu.write8(HardwareRegisters::STAT_ADDR, BitUtils::SetBit(stat, 2, ly == lyc));
 
-		if (ly == lyc && isLYLYCInterruptEnabled() && !_lycInterruptRaiseDuringRendering)
+	if (ly == lyc && isLYLYCInterruptEnabled() && !_lycInterruptRaiseDuringRendering)
+	{
+		_lycInterruptRaiseDuringRendering = true;
+		_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+	}
+
+	if (_mode == PPU::Mode::OamSearch && _ticks >= 80)
+	{
+		_ticks -= 80;
+		setMode(PPU::Mode::PixelTransfer);
+	}
+	else if (_mode == PPU::Mode::PixelTransfer && _ticks >= 172)
+	{
+		if (isHBlankInterruptEnabled())
 		{
-			_lycInterruptRaiseDuringRendering = true;
 			_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 		}
-
-		if (_mode == PPU::Mode::OamSearch && _ticks >= 80)
+		_ticks -= 172;
+		setMode(PPU::Mode::HBlank);
+		draw();
+	}
+	else if (_mode == PPU::Mode::HBlank && _ticks >= 204)
+	{
+		_currentLine++;
+		_lycInterruptRaiseDuringRendering = false;
+		_ticks -= 204;
+		if (_currentLine == 144)
 		{
-			_ticks -= 80;
-			setMode(PPU::Mode::PixelTransfer);
-		}
-		else if (_mode == PPU::Mode::PixelTransfer && _ticks >= 172)
-		{
-			if (isHBlankInterruptEnabled())
+			if (isVBlankInterruptEnabled())
 			{
 				_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 			}
-			_ticks -= 172;
-			setMode(PPU::Mode::HBlank);
-			draw();
-			//std::cout << "draw line  " << (int)_currentLine << std::endl;
+			_interrupts.raiseInterrupt(Interrupts::Type::VBlank);
+			setMode(PPU::Mode::VBlank);
+			display();
 		}
-		else if (_mode == PPU::Mode::HBlank && _ticks >= 204)
+		else
 		{
-			_currentLine++;
-			_lycInterruptRaiseDuringRendering = false;
-			_ticks -= 204;
-			if (_currentLine == 144)
+			if (isOamInterruptEnabled())
 			{
-				if (isVBlankInterruptEnabled())
-				{
-					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
-				}
-				_interrupts.raiseInterrupt(Interrupts::Type::VBlank);
-				setMode(PPU::Mode::VBlank);
-				display();
+				_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 			}
-			else
-			{
-				if (isOamInterruptEnabled())
-				{
-					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
-				}
-				_oamSearchMode.start();
-				//std::cout << "NEXT LINE " << (int)_currentLine << std::endl;
-				setMode(PPU::Mode::OamSearch);
-			}
+			_oamSearchMode.start();
+			setMode(PPU::Mode::OamSearch);
 		}
-		else if (_mode == PPU::Mode::VBlank && _ticks >= 456)
-		{
-			_currentLine++;
-			_ticks -= 456;
-			if (_currentLine > 153)
-			{
-				if (isOamInterruptEnabled())
-				{
-					_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
-				}
-				_oamSearchMode.start();
-				setMode(PPU::Mode::OamSearch);
-				_currentLine = 0;
-				_windowLineCounter = 0;
-			}
-			_lycInterruptRaiseDuringRendering = false;
-		}
-		_mmu.write8(HardwareRegisters::LY_ADDR, _currentLine);
 	}
+	else if (_mode == PPU::Mode::VBlank && _ticks >= 456)
+	{
+		_currentLine++;
+		_ticks -= 456;
+		if (_currentLine > 153)
+		{
+			if (isOamInterruptEnabled())
+			{
+				_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
+			}
+			_oamSearchMode.start();
+			setMode(PPU::Mode::OamSearch);
+			_currentLine = 0;
+			_windowLineCounter = 0;
+		}
+		_lycInterruptRaiseDuringRendering = false;
+	}
+	_mmu.write8(HardwareRegisters::LY_ADDR, _currentLine);
 }
 
 void PPU::display()

@@ -5,6 +5,7 @@
 #include "MMU.hpp"
 #include "Timer.hpp"
 #include "Input.hpp"
+#include "Interrupts.hpp"
 #include "HardwareRegisters.hpp"
 
 int main(int argc, char* argv[])
@@ -83,12 +84,12 @@ int main(int argc, char* argv[])
             time += clock.restart();
 
             cpu.tick();
-            timer.update(1);
-            ppu.update(1);
+            timer.tick();
+            ppu.tick();
 
         }
         time -= frameDuration;
-        input.update();
+        input.tick();
     }
 
     return 0;

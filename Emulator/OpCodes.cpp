@@ -1,4 +1,6 @@
 #include "CPU.hpp"
+#include "MMU.hpp"
+#include "Interrupts.hpp"
 #include <iostream>
 
 void CPU::initInstructions()

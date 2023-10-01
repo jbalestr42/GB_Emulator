@@ -1,9 +1,8 @@
 #include "CPU.hpp"
 #include "HardwareRegisters.hpp"
+#include "MMU.hpp"
+#include "Interrupts.hpp"
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
 #include <string>
 
 CPU::CPU(MMU& mmu, Interrupts& interrupts) :

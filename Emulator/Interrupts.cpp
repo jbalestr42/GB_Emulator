@@ -1,7 +1,7 @@
 #include "Interrupts.hpp"
 #include "HardwareRegisters.hpp"
 #include "BitUtils.hpp"
-#include <iostream>
+#include "MMU.hpp"
 
 Interrupts::Interrupts(MMU& mmu) :
 	_mmu(mmu),
@@ -31,14 +31,12 @@ Interrupts::Handler* Interrupts::handleInterrupts()
 
 void Interrupts::raiseInterrupt(Interrupts::Type type)
 {
-	//std::cout << "Interrrupts: raise interrupt " << type << std::endl;
 	uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR);
 	_mmu.write8(HardwareRegisters::IF_ADDR, BitUtils::SetBit(ifReg, _handlers[static_cast<size_t>(type)].bit));
 }
 
 void Interrupts::clearInterrupt(Interrupts::Type type)
 {
-	//std::cout << "Interrrupts: clear interrupt" << std::endl;
 	uint8_t ifReg = _mmu.read8(HardwareRegisters::IF_ADDR);
 	_mmu.write8(HardwareRegisters::IF_ADDR, BitUtils::UnsetBit(ifReg, _handlers[static_cast<size_t>(type)].bit));
 }
