@@ -267,16 +267,16 @@ void CPU::initInstructions()
 		_instructions[0x08] = OpCode("LD (nn),SP", 0x08, 3, 20, {
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { _data.addr = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
-			[&]() { _mmu.write8(_data.addr, BitUtils::GetLsb(_registers.sp)); },
-			[&]() { _mmu.write8(_data.addr + 1, BitUtils::GetMsb(_registers.sp)); } });
+			[&]() { _data.u16 = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
+			[&]() { _mmu.write8(_data.u16, BitUtils::GetLsb(_registers.sp)); },
+			[&]() { _mmu.write8(_data.u16 + 1, BitUtils::GetMsb(_registers.sp)); } });
 		_instructions[0xF9] = OpCode("LD SP,HL", 0xF9, 1, 8, {
 			[&]() { _registers.sp = _registers.hl(); },
 			[&]() {} });
 		_instructions[0xF8] = OpCode("LD HL,SP+n", 0xF8, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
-			[&]() { _data.addr = _registers.sp + static_cast<int8_t>(_data.lsb); },
-			[&]() { _registers.hl(_data.addr);
+			[&]() { _data.u16 = _registers.sp + static_cast<int8_t>(_data.lsb); },
+			[&]() { _registers.hl(_data.u16);
 					_registers.flags.z = 0;
 					_registers.flags.n = 0;
 					_registers.flags.h = Registers::Flags::HalfCarry8(static_cast<uint8_t>(_registers.sp), _data.lsb);
@@ -766,15 +766,15 @@ void CPU::initInstructions()
 		_instructions[0x00] = OpCode("NOP", 0x00, 1, 4, {
 				[&]() { } });
 		_instructions[0x76] = OpCode("HALT", 0x76, 1, 4, {
-				[&]() {std::cout << "HALT" << std::endl; } });
+				[&]() { } });
 		_instructions[0x10] = OpCode("STOP", 0x10, 1, 4, {
 				[&]() { _registers.pc++; } });
 		_instructions[0xF3] = OpCode("DI", 0xF3, 1, 4, {
-				[&]() { std::cout << "DI ime=0" << std::endl;
+				[&]() { //std::cout << "DI ime=0" << std::endl;
 						_interrupts.setIme(false);
 						_interruptEnableRequest = false; } });
 		_instructions[0xFB] = OpCode("EI", 0xFB, 1, 4, {
-				[&]() { std::cout << "EI ime=1" << std::endl; 
+				[&]() { //std::cout << "EI ime=1" << std::endl; 
 						_interrupts.setIme(true);;
 						_interruptEnableRequestValue = false; } });
 	}
@@ -784,36 +784,36 @@ void CPU::initInstructions()
 		_instructions[0xC3] = OpCode("JP nn", 0xC3, 3, 16, {
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { _data.addr = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
-			[&]() { _registers.pc = _data.addr; } });
+			[&]() { _data.u16 = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
+			[&]() { _registers.pc = _data.u16; } });
 
 		_instructions[0xC2] = OpCode("JP NZ,nn", 0xC2, 3, 12, { // 16 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 0) {
-			_data.overrideCycles += 1;
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 0; });
 
 		_instructions[0xCA] = OpCode("JP Z,nn", 0xCA, 3, 12, { // 16 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 1) {
-			_data.overrideCycles += 1;
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 1; });
 
 		_instructions[0xD2] = OpCode("JP NC,nn", 0xD2, 3, 12, { // 16 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 0) {
-			_data.overrideCycles += 1;
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 0; });
 
 		_instructions[0xDA] = OpCode("JP C,nn", 0xDA, 3, 12, { // 16 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 1) {
-			_data.overrideCycles += 1;
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 1; });
 
 		_instructions[0xE9] = OpCode("JP (HL)", 0xE9, 1, 4, {
 			[&]() { _registers.pc = _registers.hl(); } });
@@ -825,27 +825,27 @@ void CPU::initInstructions()
 
 		_instructions[0x20] = OpCode("JR NZ,n", 0x20, 2, 8, { // 12 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 0) {
-			_data.overrideCycles += 1;
-			_registers.pc += static_cast<int8_t>(_data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc += static_cast<int8_t>(_data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 0; });
 
 		_instructions[0x28] = OpCode("JR Z,n", 0x28, 2, 8, { // 12 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 1) {
-			_data.overrideCycles += 1;
-			_registers.pc += static_cast<int8_t>(_data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc += static_cast<int8_t>(_data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 1; });
 
 		_instructions[0x30] = OpCode("JR NC,n", 0x30, 2, 8, { // 12 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 0) {
-			_data.overrideCycles += 1;
-			_registers.pc += static_cast<int8_t>(_data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc += static_cast<int8_t>(_data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 0; });
 
 		_instructions[0x38] = OpCode("JR C,n", 0x38, 2, 8, { // 12 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 1) {
-			_data.overrideCycles += 1;
-			_registers.pc += static_cast<int8_t>(_data.lsb); } } });
+			[&]() { },
+			[&]() { _registers.pc += static_cast<int8_t>(_data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 1; });
 	}
 
 	// CALL
@@ -853,50 +853,46 @@ void CPU::initInstructions()
 		_instructions[0xCD] = OpCode("CALL nn", 0xCD, 3, 24, {
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { _registers.sp--; },
-			[&]() { _mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc)); },
-			[&]() { _mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+			[&]() { },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetMsb(_registers.pc)); },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetLsb(_registers.pc)); },
 			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } });
 
 		_instructions[0xC4] = OpCode("CALL NZ,nn", 0xC4, 3, 12, { // 24 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 0) {
-			_data.overrideCycles += 3;
-			_registers.sp--;
-			_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc));
-			_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetMsb(_registers.pc)); },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 0; });
 
 		_instructions[0xCC] = OpCode("CALL Z,nn", 0xCC, 3, 12, { // 24 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.z == 1) {
-			_data.overrideCycles += 3;
-			_registers.sp--;
-			_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc));
-			_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetMsb(_registers.pc)); },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 1; });
 
 		_instructions[0xD4] = OpCode("CALL NC,nn", 0xD4, 3, 12, { // 24 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 0) {
-			_data.overrideCycles += 3;
-			_registers.sp--;
-			_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc));
-			_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetMsb(_registers.pc)); },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 0; });
 
 		_instructions[0xDC] = OpCode("CALL C,nn", 0xDC, 3, 12, { // 24 with branch
 			[&]() { _data.lsb = _mmu.read8(_registers.pc++); },
 			[&]() { _data.msb = _mmu.read8(_registers.pc++); },
-			[&]() { if (_registers.flags.c == 1) {
-			_data.overrideCycles += 3;
-			_registers.sp--;
-			_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc));
-			_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetMsb(_registers.pc)); },
+			[&]() { _mmu.write8(--_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 1; });
 	}
 
 	// RST
@@ -948,46 +944,46 @@ void CPU::initInstructions()
 		_instructions[0xC9] = OpCode("RET nn", 0xC9, 1, 16, {
 			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
 			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
-			[&]() { _data.addr = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
-			[&]() { _registers.pc = _data.addr; } });
+			[&]() { _data.u16 = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
+			[&]() { _registers.pc = _data.u16; } });
 
 		_instructions[0xC0] = OpCode("RET NZ", 0xC0, 1, 8, { // 20 with branch
-			[&]() {},
-			[&]() { if (_registers.flags.z == 0) {
-			_data.overrideCycles += 3;
-			_data.lsb = _mmu.read8(_registers.sp++);
-			_data.msb = _mmu.read8(_registers.sp++);
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { },
+			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
+			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 0; });
 
 		_instructions[0xC8] = OpCode("RET Z", 0xC8, 1, 8, { // 20 with branch
-			[&]() {},
-			[&]() { if (_registers.flags.z == 1) {
-			_data.overrideCycles += 3;
-			_data.lsb = _mmu.read8(_registers.sp++);
-			_data.msb = _mmu.read8(_registers.sp++);
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { },
+			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
+			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.z == 1; });
 
 		_instructions[0xD0] = OpCode("RET NC", 0xD0, 1, 8, { // 20 with branch
-			[&]() {},
-			[&]() { if (_registers.flags.c == 0) {
-			_data.overrideCycles += 3;
-			_data.lsb = _mmu.read8(_registers.sp++);
-			_data.msb = _mmu.read8(_registers.sp++);
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { },
+			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
+			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 0; });
 
 		_instructions[0xD8] = OpCode("RET C", 0xD8, 1, 8, { // 20 with branch
-			[&]() {},
-			[&]() { if (_registers.flags.c == 1) {
-			_data.overrideCycles += 3;
-			_data.lsb = _mmu.read8(_registers.sp++);
-			_data.msb = _mmu.read8(_registers.sp++);
-			_registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } } });
+			[&]() { },
+			[&]() { },
+			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
+			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
+			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); } },
+			[&]() -> bool { return _registers.flags.c == 1; });
 
 		_instructions[0xD9] = OpCode("RETI", 0xD9, 1, 16, {
 			[&]() { _data.lsb = _mmu.read8(_registers.sp++); },
 			[&]() { _data.msb = _mmu.read8(_registers.sp++); },
 			[&]() { _registers.pc = BitUtils::ToUnsigned16(_data.msb, _data.lsb); },
-			[&]() { std::cout << "RETI ime=1" << std::endl;  _interrupts.setIme(true); } });
+			[&]() { /*std::cout << "RETI ime=1" << std::endl;*/  _interrupts.setIme(true); } });
 	}
 
 	// PREFIX CB
@@ -1006,21 +1002,21 @@ void CPU::initInstructions()
 			registers.flags.c = 0;
 			return r; };
 
-		_instructionsCB[0x37] = OpCode("SWAP A", 0x37, 1, 8, {
+		_instructionsCB[0x37] = OpCode("SWAP A", 0x37, 1, 4, {
 			[&]() { _registers.a = setSwapFlags(_registers, _registers.a); } });
-		_instructionsCB[0x30] = OpCode("SWAP B", 0x30, 1, 8, {
+		_instructionsCB[0x30] = OpCode("SWAP B", 0x30, 1, 4, {
 			[&]() { _registers.b = setSwapFlags(_registers, _registers.b); } });
-		_instructionsCB[0x31] = OpCode("SWAP C", 0x31, 1, 8, {
+		_instructionsCB[0x31] = OpCode("SWAP C", 0x31, 1, 4, {
 			[&]() { _registers.c = setSwapFlags(_registers, _registers.c); } });
-		_instructionsCB[0x32] = OpCode("SWAP D", 0x32, 1, 8, {
+		_instructionsCB[0x32] = OpCode("SWAP D", 0x32, 1, 4, {
 			[&]() { _registers.d = setSwapFlags(_registers, _registers.d); } });
-		_instructionsCB[0x33] = OpCode("SWAP E", 0x33, 1, 8, {
+		_instructionsCB[0x33] = OpCode("SWAP E", 0x33, 1, 4, {
 			[&]() { _registers.e = setSwapFlags(_registers, _registers.e); } });
-		_instructionsCB[0x34] = OpCode("SWAP H", 0x34, 1, 8, {
+		_instructionsCB[0x34] = OpCode("SWAP H", 0x34, 1, 4, {
 			[&]() { _registers.h = setSwapFlags(_registers, _registers.h); } });
-		_instructionsCB[0x35] = OpCode("SWAP L", 0x35, 1, 8, {
+		_instructionsCB[0x35] = OpCode("SWAP L", 0x35, 1, 4, {
 			[&]() { _registers.l = setSwapFlags(_registers, _registers.l); } });
-		_instructionsCB[0x36] = OpCode("SWAP (HL)", 0x36, 1, 16, {
+		_instructionsCB[0x36] = OpCode("SWAP (HL)", 0x36, 1, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setSwapFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1036,21 +1032,21 @@ void CPU::initInstructions()
 			registers.flags.h = 0;
 			return r; };
 
-		_instructionsCB[0x07] = OpCode("RLC A", 0x07, 2, 8, {
+		_instructionsCB[0x07] = OpCode("RLC A", 0x07, 2, 4, {
 			[&]() { _registers.a = setRlcFlags(_registers, _registers.a); } });
-		_instructionsCB[0x00] = OpCode("RLC B", 0x00, 2, 8, {
+		_instructionsCB[0x00] = OpCode("RLC B", 0x00, 2, 4, {
 			[&]() { _registers.b = setRlcFlags(_registers, _registers.b); } });
-		_instructionsCB[0x01] = OpCode("RLC C", 0x01, 2, 8, {
+		_instructionsCB[0x01] = OpCode("RLC C", 0x01, 2, 4, {
 			[&]() { _registers.c = setRlcFlags(_registers, _registers.c); } });
-		_instructionsCB[0x02] = OpCode("RLC D", 0x02, 2, 8, {
+		_instructionsCB[0x02] = OpCode("RLC D", 0x02, 2, 4, {
 			[&]() { _registers.d = setRlcFlags(_registers, _registers.d); } });
-		_instructionsCB[0x03] = OpCode("RLC E", 0x03, 2, 8, {
+		_instructionsCB[0x03] = OpCode("RLC E", 0x03, 2, 4, {
 			[&]() { _registers.e = setRlcFlags(_registers, _registers.e); } });
-		_instructionsCB[0x04] = OpCode("RLC H", 0x04, 2, 8, {
+		_instructionsCB[0x04] = OpCode("RLC H", 0x04, 2, 4, {
 			[&]() { _registers.h = setRlcFlags(_registers, _registers.h); } });
-		_instructionsCB[0x05] = OpCode("RLC L", 0x05, 2, 8, {
+		_instructionsCB[0x05] = OpCode("RLC L", 0x05, 2, 4, {
 			[&]() { _registers.l = setRlcFlags(_registers, _registers.l); } });
-		_instructionsCB[0x06] = OpCode("RLC (HL)", 0x06, 2, 16, {
+		_instructionsCB[0x06] = OpCode("RLC (HL)", 0x06, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setRlcFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1067,21 +1063,21 @@ void CPU::initInstructions()
 			registers.flags.c = c;
 			return r; };
 
-		_instructionsCB[0x17] = OpCode("RL A", 0x17, 2, 8, {
+		_instructionsCB[0x17] = OpCode("RL A", 0x17, 2, 4, {
 			[&]() { _registers.a = setRlFlags(_registers, _registers.a); } });
-		_instructionsCB[0x10] = OpCode("RL B", 0x10, 2, 8, {
+		_instructionsCB[0x10] = OpCode("RL B", 0x10, 2, 4, {
 			[&]() { _registers.b = setRlFlags(_registers, _registers.b); } });
-		_instructionsCB[0x11] = OpCode("RL C", 0x11, 2, 8, {
+		_instructionsCB[0x11] = OpCode("RL C", 0x11, 2, 4, {
 			[&]() { _registers.c = setRlFlags(_registers, _registers.c); } });
-		_instructionsCB[0x12] = OpCode("RL D", 0x12, 2, 8, {
+		_instructionsCB[0x12] = OpCode("RL D", 0x12, 2, 4, {
 			[&]() { _registers.d = setRlFlags(_registers, _registers.d); } });
-		_instructionsCB[0x13] = OpCode("RL E", 0x13, 2, 8, {
+		_instructionsCB[0x13] = OpCode("RL E", 0x13, 2, 4, {
 			[&]() { _registers.e = setRlFlags(_registers, _registers.e); } });
-		_instructionsCB[0x14] = OpCode("RL H", 0x14, 2, 8, {
+		_instructionsCB[0x14] = OpCode("RL H", 0x14, 2, 4, {
 			[&]() { _registers.h = setRlFlags(_registers, _registers.h); } });
-		_instructionsCB[0x15] = OpCode("RL L", 0x15, 2, 8, {
+		_instructionsCB[0x15] = OpCode("RL L", 0x15, 2, 4, {
 			[&]() { _registers.l = setRlFlags(_registers, _registers.l); } });
-		_instructionsCB[0x16] = OpCode("RL (HL)", 0x16, 2, 16, {
+		_instructionsCB[0x16] = OpCode("RL (HL)", 0x16, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setRlFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1097,21 +1093,21 @@ void CPU::initInstructions()
 			registers.flags.h = 0;
 			return r; };
 
-		_instructionsCB[0x0F] = OpCode("RRC A", 0x0F, 2, 8, {
+		_instructionsCB[0x0F] = OpCode("RRC A", 0x0F, 2, 4, {
 			[&]() { _registers.a = setRrcFlags(_registers, _registers.a); } });
-		_instructionsCB[0x08] = OpCode("RRC B", 0x08, 2, 8, {
+		_instructionsCB[0x08] = OpCode("RRC B", 0x08, 2, 4, {
 			[&]() { _registers.b = setRrcFlags(_registers, _registers.b); } });
-		_instructionsCB[0x09] = OpCode("RRC C", 0x09, 2, 8, {
+		_instructionsCB[0x09] = OpCode("RRC C", 0x09, 2, 4, {
 			[&]() { _registers.c = setRrcFlags(_registers, _registers.c); } });
-		_instructionsCB[0x0A] = OpCode("RRC D", 0x0A, 2, 8, {
+		_instructionsCB[0x0A] = OpCode("RRC D", 0x0A, 2, 4, {
 			[&]() { _registers.d = setRrcFlags(_registers, _registers.d); } });
-		_instructionsCB[0x0B] = OpCode("RRC E", 0x0B, 2, 8, {
+		_instructionsCB[0x0B] = OpCode("RRC E", 0x0B, 2, 4, {
 			[&]() { _registers.e = setRrcFlags(_registers, _registers.e); } });
-		_instructionsCB[0x0C] = OpCode("RRC H", 0x0C, 2, 8, {
+		_instructionsCB[0x0C] = OpCode("RRC H", 0x0C, 2, 4, {
 			[&]() { _registers.h = setRrcFlags(_registers, _registers.h); } });
-		_instructionsCB[0x0D] = OpCode("RRC L", 0x0D, 2, 8, {
+		_instructionsCB[0x0D] = OpCode("RRC L", 0x0D, 2, 4, {
 			[&]() { _registers.l = setRrcFlags(_registers, _registers.l); } });
-		_instructionsCB[0x0E] = OpCode("RRC (HL)", 0x0E, 2, 16, {
+		_instructionsCB[0x0E] = OpCode("RRC (HL)", 0x0E, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setRrcFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1128,21 +1124,21 @@ void CPU::initInstructions()
 			registers.flags.c = c;
 			return r; };
 
-		_instructionsCB[0x1F] = OpCode("RR A", 0x1F, 2, 8, {
+		_instructionsCB[0x1F] = OpCode("RR A", 0x1F, 2, 4, {
 			[&]() { _registers.a = setRrFlags(_registers, _registers.a); } });
-		_instructionsCB[0x18] = OpCode("RR B", 0x18, 2, 8, {
+		_instructionsCB[0x18] = OpCode("RR B", 0x18, 2, 4, {
 			[&]() { _registers.b = setRrFlags(_registers, _registers.b); } });
-		_instructionsCB[0x19] = OpCode("RR C", 0x19, 2, 8, {
+		_instructionsCB[0x19] = OpCode("RR C", 0x19, 2, 4, {
 			[&]() { _registers.c = setRrFlags(_registers, _registers.c); } });
-		_instructionsCB[0x1A] = OpCode("RR D", 0x1A, 2, 8, {
+		_instructionsCB[0x1A] = OpCode("RR D", 0x1A, 2, 4, {
 			[&]() { _registers.d = setRrFlags(_registers, _registers.d); } });
-		_instructionsCB[0x1B] = OpCode("RR E", 0x1B, 2, 8, {
+		_instructionsCB[0x1B] = OpCode("RR E", 0x1B, 2, 4, {
 			[&]() { _registers.e = setRrFlags(_registers, _registers.e); } });
-		_instructionsCB[0x1C] = OpCode("RR H", 0x1C, 2, 8, {
+		_instructionsCB[0x1C] = OpCode("RR H", 0x1C, 2, 4, {
 			[&]() { _registers.h = setRrFlags(_registers, _registers.h); } });
-		_instructionsCB[0x1D] = OpCode("RR L", 0x1D, 2, 8, {
+		_instructionsCB[0x1D] = OpCode("RR L", 0x1D, 2, 4, {
 			[&]() { _registers.l = setRrFlags(_registers, _registers.l); } });
-		_instructionsCB[0x1E] = OpCode("RR (HL)", 0x1E, 2, 16, {
+		_instructionsCB[0x1E] = OpCode("RR (HL)", 0x1E, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setRrFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1158,21 +1154,21 @@ void CPU::initInstructions()
 			registers.flags.c = BitUtils::GetBit(a, 7);
 			return r; };
 
-		_instructionsCB[0x27] = OpCode("SLA A", 0x27, 2, 8, {
+		_instructionsCB[0x27] = OpCode("SLA A", 0x27, 2, 4, {
 			[&]() { _registers.a = setSlaFlags(_registers, _registers.a); } });
-		_instructionsCB[0x20] = OpCode("SLA B", 0x20, 2, 8, {
+		_instructionsCB[0x20] = OpCode("SLA B", 0x20, 2, 4, {
 			[&]() { _registers.b = setSlaFlags(_registers, _registers.b); } });
-		_instructionsCB[0x21] = OpCode("SLA C", 0x21, 2, 8, {
+		_instructionsCB[0x21] = OpCode("SLA C", 0x21, 2, 4, {
 			[&]() { _registers.c = setSlaFlags(_registers, _registers.c); } });
-		_instructionsCB[0x22] = OpCode("SLA D", 0x22, 2, 8, {
+		_instructionsCB[0x22] = OpCode("SLA D", 0x22, 2, 4, {
 			[&]() { _registers.d = setSlaFlags(_registers, _registers.d); } });
-		_instructionsCB[0x23] = OpCode("SLA E", 0x23, 2, 8, {
+		_instructionsCB[0x23] = OpCode("SLA E", 0x23, 2, 4, {
 			[&]() { _registers.e = setSlaFlags(_registers, _registers.e); } });
-		_instructionsCB[0x24] = OpCode("SLA H", 0x24, 2, 8, {
+		_instructionsCB[0x24] = OpCode("SLA H", 0x24, 2, 4, {
 			[&]() { _registers.h = setSlaFlags(_registers, _registers.h); } });
-		_instructionsCB[0x25] = OpCode("SLA L", 0x25, 2, 8, {
+		_instructionsCB[0x25] = OpCode("SLA L", 0x25, 2, 4, {
 			[&]() { _registers.l = setSlaFlags(_registers, _registers.l); } });
-		_instructionsCB[0x26] = OpCode("SLA (HL)", 0x26, 2, 16, {
+		_instructionsCB[0x26] = OpCode("SLA (HL)", 0x26, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setSlaFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1188,21 +1184,21 @@ void CPU::initInstructions()
 			registers.flags.c = BitUtils::GetBit(a, 0);
 			return r; };
 
-		_instructionsCB[0x2F] = OpCode("SRA A", 0x2F, 2, 8, {
+		_instructionsCB[0x2F] = OpCode("SRA A", 0x2F, 2, 4, {
 			[&]() { _registers.a = setSraFlags(_registers, _registers.a); } });
-		_instructionsCB[0x28] = OpCode("SRA B", 0x28, 2, 8, {
+		_instructionsCB[0x28] = OpCode("SRA B", 0x28, 2, 4, {
 			[&]() { _registers.b = setSraFlags(_registers, _registers.b); } });
-		_instructionsCB[0x29] = OpCode("SRA C", 0x29, 2, 8, {
+		_instructionsCB[0x29] = OpCode("SRA C", 0x29, 2, 4, {
 			[&]() { _registers.c = setSraFlags(_registers, _registers.c); } });
-		_instructionsCB[0x2A] = OpCode("SRA D", 0x2A, 2, 8, {
+		_instructionsCB[0x2A] = OpCode("SRA D", 0x2A, 2, 4, {
 			[&]() { _registers.d = setSraFlags(_registers, _registers.d); } });
-		_instructionsCB[0x2B] = OpCode("SRA E", 0x2B, 2, 8, {
+		_instructionsCB[0x2B] = OpCode("SRA E", 0x2B, 2, 4, {
 			[&]() { _registers.e = setSraFlags(_registers, _registers.e); } });
-		_instructionsCB[0x2C] = OpCode("SRA H", 0x2C, 2, 8, {
+		_instructionsCB[0x2C] = OpCode("SRA H", 0x2C, 2, 4, {
 			[&]() { _registers.h = setSraFlags(_registers, _registers.h); } });
-		_instructionsCB[0x2D] = OpCode("SRA L", 0x2D, 2, 8, {
+		_instructionsCB[0x2D] = OpCode("SRA L", 0x2D, 2, 4, {
 			[&]() { _registers.l = setSraFlags(_registers, _registers.l); } });
-		_instructionsCB[0x2E] = OpCode("SRA (HL)", 0x2E, 2, 16, {
+		_instructionsCB[0x2E] = OpCode("SRA (HL)", 0x2E, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setSraFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1218,21 +1214,21 @@ void CPU::initInstructions()
 			registers.flags.c = BitUtils::GetBit(a, 0);
 			return r; };
 
-		_instructionsCB[0x3F] = OpCode("SRL A", 0x3F, 2, 8, {
+		_instructionsCB[0x3F] = OpCode("SRL A", 0x3F, 2, 4, {
 			[&]() { _registers.a = setSrlFlags(_registers, _registers.a); } });
-		_instructionsCB[0x38] = OpCode("SRL B", 0x38, 2, 8, {
+		_instructionsCB[0x38] = OpCode("SRL B", 0x38, 2, 4, {
 			[&]() { _registers.b = setSrlFlags(_registers, _registers.b); } });
-		_instructionsCB[0x39] = OpCode("SRL C", 0x39, 2, 8, {
+		_instructionsCB[0x39] = OpCode("SRL C", 0x39, 2, 4, {
 			[&]() { _registers.c = setSrlFlags(_registers, _registers.c); } });
-		_instructionsCB[0x3A] = OpCode("SRL D", 0x3A, 2, 8, {
+		_instructionsCB[0x3A] = OpCode("SRL D", 0x3A, 2, 4, {
 			[&]() { _registers.d = setSrlFlags(_registers, _registers.d); } });
-		_instructionsCB[0x3B] = OpCode("SRL E", 0x3B, 2, 8, {
+		_instructionsCB[0x3B] = OpCode("SRL E", 0x3B, 2, 4, {
 			[&]() { _registers.e = setSrlFlags(_registers, _registers.e); } });
-		_instructionsCB[0x3C] = OpCode("SRL H", 0x3C, 2, 8, {
+		_instructionsCB[0x3C] = OpCode("SRL H", 0x3C, 2, 4, {
 			[&]() { _registers.h = setSrlFlags(_registers, _registers.h); } });
-		_instructionsCB[0x3D] = OpCode("SRL L", 0x3D, 2, 8, {
+		_instructionsCB[0x3D] = OpCode("SRL L", 0x3D, 2, 4, {
 			[&]() { _registers.l = setSrlFlags(_registers, _registers.l); } });
-		_instructionsCB[0x3E] = OpCode("SRL (HL)", 0x3E, 2, 16, {
+		_instructionsCB[0x3E] = OpCode("SRL (HL)", 0x3E, 2, 12, {
 			[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 			[&]() { _mmu.write8(_registers.hl(), setSrlFlags(_registers, _data.lsb)); },
 			[&]() { } });
@@ -1247,21 +1243,21 @@ void CPU::initInstructions()
 
 		for (uint8_t i = 0; i < 8; i++)
 		{
-			_instructionsCB[0x47 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",A").c_str(), 0x47 + (i * 8), 2, 8, {
+			_instructionsCB[0x47 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",A").c_str(), 0x47 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.a, i); } });
-			_instructionsCB[0x40 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",B").c_str(), 0x40 + (i * 8), 2, 8, {
+			_instructionsCB[0x40 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",B").c_str(), 0x40 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.b, i); } });
-			_instructionsCB[0x41 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",C").c_str(), 0x41 + (i * 8), 2, 8, {
+			_instructionsCB[0x41 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",C").c_str(), 0x41 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.c, i); } });
-			_instructionsCB[0x42 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",D").c_str(), 0x42 + (i * 8), 2, 8, {
+			_instructionsCB[0x42 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",D").c_str(), 0x42 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.d, i); } });
-			_instructionsCB[0x43 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",E").c_str(), 0x43 + (i * 8), 2, 8, {
+			_instructionsCB[0x43 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",E").c_str(), 0x43 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.e, i); } });
-			_instructionsCB[0x44 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",H").c_str(), 0x44 + (i * 8), 2, 8, {
+			_instructionsCB[0x44 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",H").c_str(), 0x44 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.h, i); } });
-			_instructionsCB[0x45 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",L").c_str(), 0x45 + (i * 8), 2, 8, {
+			_instructionsCB[0x45 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",L").c_str(), 0x45 + (i * 8), 2, 4, {
 				[&, i]() { setBitFlags(_registers, _registers.l, i); } });
-			_instructionsCB[0x46 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",(HL)").c_str(), 0x46 + (i * 8), 2, 12, {
+			_instructionsCB[0x46 + (i * 8)] = OpCode(("BIT " + std::to_string(i) + ",(HL)").c_str(), 0x46 + (i * 8), 2, 8, {
 				[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 				[&, i]() { setBitFlags(_registers, _data.lsb, i); } });
 		}
@@ -1271,21 +1267,21 @@ void CPU::initInstructions()
 	{
 		for (uint8_t i = 0; i < 8; i++)
 		{
-			_instructionsCB[0xC7 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",A").c_str(), 0xC7 + (i * 8), 2, 8, {
+			_instructionsCB[0xC7 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",A").c_str(), 0xC7 + (i * 8), 2, 4, {
 				[&, i]() { _registers.a = BitUtils::SetBit(_registers.a, i); } });
-			_instructionsCB[0xC0 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",B").c_str(), 0xC0 + (i * 8), 2, 8, {
+			_instructionsCB[0xC0 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",B").c_str(), 0xC0 + (i * 8), 2, 4, {
 				[&, i]() { _registers.b = BitUtils::SetBit(_registers.b, i); } });
-			_instructionsCB[0xC1 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",C").c_str(), 0xC1 + (i * 8), 2, 8, {
+			_instructionsCB[0xC1 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",C").c_str(), 0xC1 + (i * 8), 2, 4, {
 				[&, i]() { _registers.c = BitUtils::SetBit(_registers.c, i); } });
-			_instructionsCB[0xC2 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",D").c_str(), 0xC2 + (i * 8), 2, 8, {
+			_instructionsCB[0xC2 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",D").c_str(), 0xC2 + (i * 8), 2, 4, {
 				[&, i]() { _registers.d = BitUtils::SetBit(_registers.d, i); } });
-			_instructionsCB[0xC3 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",E").c_str(), 0xC3 + (i * 8), 2, 8, {
+			_instructionsCB[0xC3 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",E").c_str(), 0xC3 + (i * 8), 2, 4, {
 				[&, i]() { _registers.e = BitUtils::SetBit(_registers.e, i); } });
-			_instructionsCB[0xC4 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",H").c_str(), 0xC4 + (i * 8), 2, 8, {
+			_instructionsCB[0xC4 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",H").c_str(), 0xC4 + (i * 8), 2, 4, {
 				[&, i]() { _registers.h = BitUtils::SetBit(_registers.h, i); } });
-			_instructionsCB[0xC5 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",L").c_str(), 0xC5 + (i * 8), 2, 8, {
+			_instructionsCB[0xC5 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",L").c_str(), 0xC5 + (i * 8), 2, 4, {
 				[&, i]() { _registers.l = BitUtils::SetBit(_registers.l, i); } });
-			_instructionsCB[0xC6 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",(HL)").c_str(), 0xC6 + (i * 8), 2, 16, {
+			_instructionsCB[0xC6 + (i * 8)] = OpCode(("SET " + std::to_string(i) + ",(HL)").c_str(), 0xC6 + (i * 8), 2, 12, {
 				[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 				[&, i]() { _mmu.write8(_registers.hl(), BitUtils::SetBit(_data.lsb, i)); },
 				[&]() { } });
@@ -1296,21 +1292,21 @@ void CPU::initInstructions()
 	{
 		for (uint8_t i = 0; i < 8; i++)
 		{
-			_instructionsCB[0x87 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",A").c_str(), 0x87 + (i * 8), 2, 8, {
+			_instructionsCB[0x87 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",A").c_str(), 0x87 + (i * 8), 2, 4, {
 				[&, i]() { _registers.a = BitUtils::UnsetBit(_registers.a, i); } });
-			_instructionsCB[0x80 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",B").c_str(), 0x80 + (i * 8), 2, 8, {
+			_instructionsCB[0x80 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",B").c_str(), 0x80 + (i * 8), 2, 4, {
 				[&, i]() { _registers.b = BitUtils::UnsetBit(_registers.b, i); } });
-			_instructionsCB[0x81 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",C").c_str(), 0x81 + (i * 8), 2, 8, {
+			_instructionsCB[0x81 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",C").c_str(), 0x81 + (i * 8), 2, 4, {
 				[&, i]() { _registers.c = BitUtils::UnsetBit(_registers.c, i); } });
-			_instructionsCB[0x82 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",D").c_str(), 0x82 + (i * 8), 2, 8, {
+			_instructionsCB[0x82 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",D").c_str(), 0x82 + (i * 8), 2, 4, {
 				[&, i]() { _registers.d = BitUtils::UnsetBit(_registers.d, i); } });
-			_instructionsCB[0x83 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",E").c_str(), 0x83 + (i * 8), 2, 8, {
+			_instructionsCB[0x83 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",E").c_str(), 0x83 + (i * 8), 2, 4, {
 				[&, i]() { _registers.e = BitUtils::UnsetBit(_registers.e, i); } });
-			_instructionsCB[0x84 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",H").c_str(), 0x84 + (i * 8), 2, 8, {
+			_instructionsCB[0x84 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",H").c_str(), 0x84 + (i * 8), 2, 4, {
 				[&, i]() { _registers.h = BitUtils::UnsetBit(_registers.h, i); } });
-			_instructionsCB[0x85 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",L").c_str(), 0x85 + (i * 8), 2, 8, {
+			_instructionsCB[0x85 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",L").c_str(), 0x85 + (i * 8), 2, 4, {
 				[&, i]() { _registers.l = BitUtils::UnsetBit(_registers.l, i); } });
-			_instructionsCB[0x86 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",(HL)").c_str(), 0x86 + (i * 8), 2, 16, {
+			_instructionsCB[0x86 + (i * 8)] = OpCode(("RES " + std::to_string(i) + ",(HL)").c_str(), 0x86 + (i * 8), 2, 12, {
 				[&]() { _data.lsb = _mmu.read8(_registers.hl()); },
 				[&, i]() { _mmu.write8(_registers.hl(), BitUtils::UnsetBit(_data.lsb, i)); },
 				[&]() { } });

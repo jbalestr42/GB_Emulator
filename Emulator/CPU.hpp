@@ -20,19 +20,45 @@ private:
 		uint8_t tcycles; // T - states: 4, 8, 12, 16
 		uint8_t mcycles; // M - cycles: 1, 2, 3, 4
 		std::vector<std::function<void()>> steps;
+		std::function<bool()> branching;
 
 		OpCode() :
-			OpCode("", 0, 0, 0, {})
+			OpCode("", 0, 0, 0, {}, nullptr)
 		{}
 
-		OpCode(const char* mnemonic, uint8_t value, uint8_t size, uint8_t tcycles, std::vector<std::function<void()>> steps) :
+		OpCode(const char* mnemonic, uint8_t value, uint8_t size, uint8_t tcycles, std::vector<std::function<void()>> steps, std::function<bool()> branching = nullptr) :
 			mnemonic(mnemonic),
 			value(value),
 			size(size),
 			tcycles(tcycles),
 			mcycles(tcycles / 4),
-			steps(steps)
+			steps(steps),
+			branching(branching)
 		{}
+
+		bool execute(uint8_t index)
+		{
+			// m-cycles are the minimum instructions to perform
+			// if a branching is detected, the max number of instruction is steps.size()
+
+			steps[index]();
+
+			// No branching, execute the steps
+			if (branching == nullptr)
+			{
+				return index == (mcycles - 1);
+			}
+
+			// Is Branch reached ?
+			if (index >= (mcycles - 1))
+			{
+				// If Branching, keep executing otherwise stop
+				return branching() ? index == (steps.size() - 1) : true;
+			}
+
+			// Branching not reached yet, execute steps
+			return false;
+		}
 	};
 
 	static const uint16_t START_PC_ADDR = 0x0100;
@@ -61,9 +87,7 @@ private:
 	{
 		uint8_t msb;
 		uint8_t lsb;
-		uint16_t addr;
 		uint16_t u16;
-		uint8_t overrideCycles;
 	};
 
 	StepData _data;

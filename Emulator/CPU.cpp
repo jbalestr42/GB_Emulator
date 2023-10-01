@@ -98,7 +98,7 @@ void CPU::tick()
 				}
 				else
 				{
-					std::cout << "HALT" << std::endl;
+					//std::cout << "HALT" << std::endl;
 					_state = State::Halt;
 					return;
 				}
@@ -125,16 +125,8 @@ void CPU::tick()
 		}
 		case State::Execute:
 		{
-			if (_currentInstruction < _currentOpCode->steps.size())
+			if (_currentOpCode->execute(_currentInstruction++))
 			{
-				// tODO: fix variable length instructions
-				_currentOpCode->steps[_currentInstruction]();
-			}
-			_currentInstruction++;
-
-			if (_currentInstruction >= (_currentOpCode->steps.size() + _data.overrideCycles))
-			{
-				_data.overrideCycles = 0;
 				_currentInstruction = 0;
 				_state = State::Fetch;
 			}
