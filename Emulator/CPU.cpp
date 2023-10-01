@@ -9,9 +9,14 @@
 CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_mmu(mmu),
 	_interrupts(interrupts),
+	_state(State::Fetch),
 	_halt(false),
 	_haltBug(false),
-	_interruptEnableRequest(false)
+	_interruptEnableRequest(false),
+	_interruptEnableRequestValue(false),
+	_opCodeByte(0),
+	_currentOpCode(nullptr),
+	_currentInstruction(0)
 {
 	_registers.a = 0x01;
 	_registers.b = 0;
@@ -29,120 +34,142 @@ CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_registers.flags.c = 1;
 	_registers.af();
 	initInstructions();
+
+	_isr = OpCode("ISR", 0x00, 1, 20, {
+		[&]() {},
+		[&]() {},
+		[&]() { _registers.sp--;
+				_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc)); },
+		[&]() { _mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc)); },
+		[&]() { _registers.pc = BitUtils::ToUnsigned16(0x00, _isr.value); } });
 }
 
-
-uint8_t CPU::fetchInstruction()
+void CPU::tick()
 {
-	return _mmu.read8(_registers.pc++);
-}
+	_ticks = (_ticks + 1) % 4;
 
-CPU::OpCode & CPU::disassembleInstruction(uint8_t opCode, bool isPrefixCB)
-{
-	if (isPrefixCB)
+	if (_ticks != 0)
 	{
-		if (_instructionsCB.count(opCode) == 0)
-		{
-			std::cout << "OpCode prefix CB: " << BitUtils::ToString(opCode) << " not implemented." << std::endl;
-		}
-		return _instructionsCB[opCode];
+		return;
 	}
 
-	if (_instructions.count(opCode) == 0)
+	if (_state == State::Fetch || _state == State::FetchExt || _state == State::Halt)
 	{
-		std::cout << "OpCode: " << BitUtils::ToString(opCode) << " not implemented." << std::endl;
-	}
-	return _instructions[opCode];
-}
-
-size_t CPU::update()
-{
-	_data.overrideCycles = 0;
-	Interrupts::Handler* interruptHandler = _interrupts.handleInterrupts();
-	if (interruptHandler != nullptr)
-	{
-		if (_interrupts.getIme())
+		if (_interrupts.getIme() && _interrupts.hasPendingInterrupts())
 		{
-			_halt = false;
-			//std::cout << "stop halt: interrupt service routine" << std::endl;
-			interruptServiceRoutine(interruptHandler->addr);
-			_data.overrideCycles += 20;
-			_interrupts.clearInterrupt(interruptHandler->type);
-			_interrupts.setIme(false);
-		}
-	}
-
-	if (_halt)
-	{
-		if (_interrupts.hasPendingInterrupts())
-		{
-			//std::cout << "stop halt: pending interrupt" << std::endl;
-			_halt = false;
-		}
-		else
-		{
-			return 4;
+			_state = State::Interrupt;
 		}
 	}
 
 	if (_interruptEnableRequest)
 	{
-		_interrupts.setIme(true);
 		_interruptEnableRequest = false;
+		_interrupts.setIme(_interruptEnableRequestValue);
 	}
 
-	uint8_t opCode = fetchInstruction();
-	bool isPrefixCB = opCode == 0xCB;
-	if (isPrefixCB)
-	{
-		opCode = fetchInstruction();
-	}
-	OpCode & instruction = disassembleInstruction(opCode, isPrefixCB);
-
-	if (_haltBug)
-	{
-		_registers.pc--;
-		_haltBug = false;
-	}
-
-	for (size_t i = 0; i < instruction.steps.size(); i++)
-	{
-		// Excute instruction step
-		instruction.steps[i]();
-	}
-
-	// TODO Serial
 	static std::string s = "";
 	if (_mmu.read8(HardwareRegisters::SC_ADDR) == 0x81)
 	{
 		s += _mmu.read8(HardwareRegisters::SB_ADDR);
-		char c =_mmu.read8(HardwareRegisters::SB_ADDR);
-		//std::cout << s << std::endl;
+		char c = _mmu.read8(HardwareRegisters::SB_ADDR);
+		//std::cout << c;
 		_mmu.write8(HardwareRegisters::SC_ADDR, 0x01);
-		//_interrupts.raiseInterrupt(Interrupts::Type::Serial);
-		//_mmu.dump();
 	}
-	
-	_registers.pc &= 0xFFFF;
-	return instruction.tcycles + _data.overrideCycles;
+
+	while (true)
+	{
+		switch (_state)
+		{
+		case State::Fetch:
+		{
+			_opCodeByte = _mmu.read8(_registers.pc++);
+			if (_opCodeByte == 0xCB)
+			{
+				_state = State::FetchExt;
+			}
+			else if (_opCodeByte == 0x76)
+			{
+				if (_interrupts.isHaltBug())
+				{
+					std::cout << "HALT BUG" << std::endl;
+					_state = State::Fetch;
+					_haltBug = true;
+					return;
+				}
+				else
+				{
+					std::cout << "HALT" << std::endl;
+					_state = State::Halt;
+					return;
+				}
+			}
+			else
+			{
+				_currentOpCode = &_instructions[_opCodeByte];
+				_state = State::Execute;
+			}
+
+			if (_haltBug)
+			{
+				_registers.pc--;
+				_haltBug = false;
+			}
+			break;
+		}
+		case State::FetchExt:
+		{
+			_opCodeByte = _mmu.read8(_registers.pc++);
+			_currentOpCode = &_instructionsCB[_opCodeByte];
+			_state = State::Execute;
+			return;
+		}
+		case State::Execute:
+		{
+			if (_currentInstruction < _currentOpCode->steps.size())
+			{
+				// tODO: fix variable length instructions
+				_currentOpCode->steps[_currentInstruction]();
+			}
+			_currentInstruction++;
+
+			if (_currentInstruction >= (_currentOpCode->steps.size() + _data.overrideCycles))
+			{
+				_data.overrideCycles = 0;
+				_currentInstruction = 0;
+				_state = State::Fetch;
+			}
+			return;
+		}
+		case State::Halt:
+			if (_interrupts.hasPendingInterrupts())
+			{
+				_state = State::Fetch;
+			}
+			return;
+		case State::Interrupt:
+		{
+			Interrupts::Handler* interruptHandler = _interrupts.handleInterrupts();
+			if (interruptHandler != nullptr)
+			{
+				_currentOpCode = interruptServiceRoutine(interruptHandler->addr);
+				_interrupts.clearInterrupt(interruptHandler->type);
+				_interrupts.setIme(false);
+				_state = State::Execute;
+			}
+			else
+			{
+				_state = State::Fetch;
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
 }
 
-void CPU::interruptServiceRoutine(uint16_t addr)
+CPU::OpCode* CPU::interruptServiceRoutine(uint16_t addr)
 {
-	// TODO: regular call, qe coul turn that into an OpCode
-	//// 2 empty M-cycles
-	//_registers.sp -= 2;
-	//// 2 more M-cycles
-	//_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-	//_mmu.write8(_registers.sp + 1, BitUtils::GetMsb(_registers.pc));
-	//// 1 more M-cycle
-	//_registers.pc = addr;
-
-	// 2 empty M-cycles
-	_registers.sp--;
-	// 2 more M-cycles
-	_mmu.write8(_registers.sp--, BitUtils::GetMsb(_registers.pc));
-	_mmu.write8(_registers.sp, BitUtils::GetLsb(_registers.pc));
-	// 1 more M-cycle
-	_registers.pc = addr;
+	_isr.value = addr & 0xFF;
+	return &_isr;
 }

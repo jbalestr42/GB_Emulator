@@ -41,15 +41,21 @@ public:
 	CPU(MMU& mmu, Interrupts& interrupts);
 	~CPU() = default;
 
-	void initInstructions();
-	uint8_t fetchInstruction();
-	CPU::OpCode & disassembleInstruction(uint8_t opCode, bool isPrefixCB);
-	size_t update();
-
+	void tick();
 	static const int CLOCK_FREQUENCY_HZ = 4194304;
 
 private:
-	void interruptServiceRoutine(uint16_t addr);
+	void initInstructions();
+	CPU::OpCode* interruptServiceRoutine(uint16_t addr);
+
+	enum State
+	{
+		Fetch,
+		FetchExt,
+		Execute,
+		Halt,
+		Interrupt
+	};
 
 	struct StepData
 	{
@@ -65,9 +71,16 @@ private:
 	MMU& _mmu;
 	Interrupts& _interrupts;
 	Registers _registers;
+	State _state;
 	std::map<uint8_t, OpCode> _instructions;
 	std::map<uint8_t, OpCode> _instructionsCB;
 	bool _halt;
 	bool _haltBug;
 	bool _interruptEnableRequest;
+	bool _interruptEnableRequestValue;
+	uint8_t _opCodeByte;
+	OpCode* _currentOpCode;
+	uint8_t _currentInstruction;
+	OpCode _isr;
+	uint8_t _ticks;
 };

@@ -82,9 +82,9 @@ int main(int argc, char* argv[])
         {
             time += clock.restart();
 
-            size_t ticks = cpu.update();
-            timer.update(ticks);
-            ppu.update(ticks);
+            cpu.tick();
+            timer.update(1);
+            ppu.update(1);
 
         }
         time -= frameDuration;
