@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "CPU.hpp"
+
+class Interrupts;
 
 class Timer
 {
@@ -9,15 +10,10 @@ public:
 	Timer(Interrupts& interrupts);
 	~Timer() = default;
 
-	static const uint16_t TICKS_TO_CYCLES = 4;
-	static const uint16_t DIV_INCREMENT_RATE_HZ = 16384;
-	static const uint16_t DIV_INCREMENT_RATE = CPU::CLOCK_FREQUENCY_HZ / DIV_INCREMENT_RATE_HZ;
-	static const uint16_t TIMA_INCREMENT_RATES[];
-
 	void update(size_t ticks);
-	uint16_t getDiv();
+	uint8_t getDiv();
 	void setDiv();
-	uint16_t getTima();
+	uint8_t getTima();
 	void setTima(uint8_t v);
 	uint8_t getTac();
 	void setTac(uint8_t v);
@@ -25,18 +21,17 @@ public:
 	void setTma(uint8_t v);
 
 private:
+	void incTima();
+	void updateDiv(uint16_t newDiv);
 
-	void updateDiv(size_t cycles);
-	void updateTima(size_t cycles);
+	static const uint8_t FREQ_TO_BIT[];
 
 	Interrupts& _interrupts;
-
-	size_t _divCycles;
 	uint16_t _div;
-
-	bool _isTimaEnabled;
-	uint8_t _timaRateId;
-	size_t _timaCycles;
 	uint8_t _tima;
 	uint8_t _tma;
+	uint8_t _tac;
+	bool _previousBit;
+	bool _overflow;
+	uint8_t _ticksSinceOverflow;
 };

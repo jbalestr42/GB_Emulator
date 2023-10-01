@@ -17,10 +17,10 @@ int main(int argc, char* argv[])
     Input input(mmu);
 
     mmu.addMemoryOverride(HardwareRegisters::DIV_ADDR, MMU::MemoryOverride(
-        [&timer]() { return static_cast<uint8_t>(timer.getDiv()); },
+        [&timer]() { return timer.getDiv(); },
         [&timer](uint8_t value) { timer.setDiv(); }));
     mmu.addMemoryOverride(HardwareRegisters::TIMA_ADDR, MMU::MemoryOverride(
-        [&timer]() { return static_cast<uint8_t>(timer.getTima()); },
+        [&timer]() { return timer.getTima(); },
         [&timer](uint8_t value) { timer.setTima(value); }));
     mmu.addMemoryOverride(HardwareRegisters::TMA_ADDR, MMU::MemoryOverride(
         [&timer]() { return timer.getTma(); },

@@ -1,100 +1,109 @@
 #include "Timer.hpp"
+#include "Interrupts.hpp"
 
-const uint16_t Timer::TIMA_INCREMENT_RATES[] = {
-							CPU::CLOCK_FREQUENCY_HZ / 4096,
-							CPU::CLOCK_FREQUENCY_HZ / 262144,
-							CPU::CLOCK_FREQUENCY_HZ / 65536,
-							CPU::CLOCK_FREQUENCY_HZ / 16384, };
+const uint8_t Timer::FREQ_TO_BIT[] = { 9, 3, 5, 7 };
 
 Timer::Timer(Interrupts& interrupts) :
 	_interrupts(interrupts),
-	_divCycles(0),
 	_div(0),
-	_isTimaEnabled(false),
-	_timaRateId(0),
-	_timaCycles(0),
 	_tima(0),
-	_tma(0)
+	_tma(0),
+	_tac(0),
+	_previousBit(false),
+	_overflow(false),
+	_ticksSinceOverflow(0)
 { }
 
 void Timer::update(size_t ticks)
 {
-	size_t cycles = ticks;
-	updateDiv(cycles);
-
-	if (_isTimaEnabled)
+	updateDiv((_div + ticks) & 0xFFFF);
+	if (!_overflow)
 	{
-		updateTima(cycles);
+		return;
+	}
+
+	_ticksSinceOverflow++;
+	if (_ticksSinceOverflow == 4)
+	{
+		_interrupts.raiseInterrupt(Interrupts::Type::Timer);
+	}
+
+	if (_ticksSinceOverflow == 5)
+	{
+		_tima = _tma;
+	}
+
+	if (_ticksSinceOverflow == 6)
+	{
+		_tima = _tma;
+		_overflow = false;
+		_ticksSinceOverflow = 0;
 	}
 }
 
-void Timer::updateDiv(size_t cycles)
+void Timer::updateDiv(uint16_t newDiv)
 {
-	// This register is incremented at a rate of 16384Hz. Writing any value to this register resets it to 0x00.
-	// Additionally, this register is reset when executing the stop instruction, and only begins ticking again once stop mode ends.
-	_divCycles += cycles;
+	_div = newDiv;
 
-	if (_divCycles >= DIV_INCREMENT_RATE)
+	uint8_t clockSelect = _tac & 0b11;
+	uint8_t bitPos = FREQ_TO_BIT[clockSelect];
+	bool bit = (_div & (1 << bitPos)) != 0;
+	bool timerEnable = _tac & (1 << 2);
+	bit &= timerEnable;
+	
+	if (!bit && _previousBit)
 	{
-		_divCycles -= DIV_INCREMENT_RATE;
-		_div++;
+		incTima();
+	}
+
+	_previousBit = bit;
+}
+
+
+void Timer::incTima()
+{
+	_tima++;
+	_tima %= 0x100;
+	if (_tima == 0)
+	{
+		_overflow = true;
+		_ticksSinceOverflow = 0;
 	}
 }
 
-void Timer::updateTima(size_t cycles)
+uint8_t Timer::getDiv()
 {
-	// This timer is incremented at the clock frequency specified by the TAC register (0xFF07).
-	_timaCycles += cycles;
-
-	uint16_t timaIncrementRate = TIMA_INCREMENT_RATES[_timaRateId];
-	while (_timaCycles >= timaIncrementRate)
-	{
-		_timaCycles -= timaIncrementRate;
-		if (_tima == 0xFF)
-		{
-			// When the value overflows it is reset to the value specified in TMA and an interrupt is requested
-			_tima = _tma;
-			_interrupts.raiseInterrupt(Interrupts::Type::Timer);
-		}
-		else
-		{
-			_tima++;
-		}
-	}
-}
-
-uint16_t Timer::getDiv()
-{
-	return _div;
+	return _div >> 8;
 }
 
 void Timer::setDiv()
 {
-	_div = 0;
-	_timaCycles = 0;
+	updateDiv(0);
 }
 
-uint16_t Timer::getTima()
+uint8_t Timer::getTima()
 {
 	return _tima;
 }
 
 void Timer::setTima(uint8_t v)
 {
-	_tima = v;
+	if (_ticksSinceOverflow < 5)
+	{
+		_tima = v;
+		_overflow = false;
+		_ticksSinceOverflow = 0;
+	}
 }
 
 uint8_t Timer::getTac()
 {
-	return 0b11111000 | _timaRateId | _isTimaEnabled << 2;
+	return 0b11111000 | _tac;
 }
 
 void Timer::setTac(uint8_t v)
 {
-	_isTimaEnabled = BitUtils::GetBit(v, 2);
-	
-	_timaRateId = v & 0b00000011;
-	_timaCycles = 0;
+	_tac = v;
 }
 
 uint8_t Timer::getTma()

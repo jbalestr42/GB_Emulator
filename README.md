@@ -24,18 +24,18 @@
 | OAM DMA          | Basic             | :white_check_mark: |
 | OAM DMA          | reg_read          | :x:                |
 | Timer            | Div Write         | :white_check_mark: |
-| Timer            | Rapid toggle      | :x:                |
+| Timer            | Rapid toggle      | :white_check_mark: |
 | Timer            | Tim00             | :white_check_mark: |
-| Timer            | Tim00 Div trigger | :x:                |
+| Timer            | Tim00 Div trigger | :white_check_mark: |
 | Timer            | Tim01             | :white_check_mark: |
-| Timer            | Tim01 Div trigger | :x:                |
+| Timer            | Tim01 Div trigger | :white_check_mark: |
 | Timer            | Tim10             | :white_check_mark: |
-| Timer            | Tim10 Div trigger | :x:                |
+| Timer            | Tim10 Div trigger | :white_check_mark: |
 | Timer            | Tim11             | :white_check_mark: |
-| Timer            | Tim11 Div trigger | :x:                |
-| Timer            | Tima reload       | :x:                |
-| Timer            | Tima write reloa. | :x:                |
-| Timer            | Tma write reload. | :x:                |
+| Timer            | Tim11 Div trigger | :white_check_mark: |
+| Timer            | Tima reload       | :white_check_mark: |
+| Timer            | Tima write reloa. | :white_check_mark: |
+| Timer            | Tma write reload. | :white_check_mark: |
 | MBC 1            | all but multicart | :white_check_mark: |
-| MBC 2            | all testes        | :white_check_mark: |
-| MBC 5            | all testes        | :white_check_mark: |
+| MBC 2            | all               | :white_check_mark: |
+| MBC 5            | all               | :white_check_mark: |
