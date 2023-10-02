@@ -140,6 +140,7 @@
     <ClCompile Include="BitUtils.cpp" />
     <ClCompile Include="Cartridge.cpp" />
     <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="Emulator.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Interrupts.cpp" />
     <ClCompile Include="MBC2.cpp" />
@@ -158,8 +159,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitUtils.hpp" />
+    <ClInclude Include="BootRom.hpp" />
     <ClInclude Include="Cartridge.hpp" />
     <ClInclude Include="CPU.hpp" />
+    <ClInclude Include="Emulator.hpp" />
     <ClInclude Include="HardwareRegisters.hpp" />
     <ClInclude Include="IMemoryRange.hpp" />
     <ClInclude Include="Input.hpp" />

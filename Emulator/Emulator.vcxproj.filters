@@ -93,6 +93,9 @@
     <ClCompile Include="OamSearchMode.cpp">
       <Filter>Fichiers sources\PPU</Filter>
     </ClCompile>
+    <ClCompile Include="Emulator.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MMU.hpp">
@@ -148,6 +151,12 @@
     </ClInclude>
     <ClInclude Include="OamSearchMode.hpp">
       <Filter>Fichiers d%27en-tête\PPU</Filter>
+    </ClInclude>
+    <ClInclude Include="Emulator.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="BootRom.hpp">
+      <Filter>Fichiers d%27en-tête\MMU</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

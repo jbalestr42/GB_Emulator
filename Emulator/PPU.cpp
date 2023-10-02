@@ -18,6 +18,9 @@ PPU::PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t he
 	_pixelSize(pixelSize),
 	_frameRate(frameRate),
 	_window(sf::VideoMode(_width * _pixelSize, _height * _pixelSize), title)
+{ }
+
+void PPU::initialize()
 {
 	_vertices.setPrimitiveType(sf::Quads);
 	_vertices.resize(_width * _height * 4);

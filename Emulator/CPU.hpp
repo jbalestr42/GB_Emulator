@@ -16,8 +16,12 @@ public:
 	CPU(MMU& mmu, Interrupts& interrupts);
 	~CPU() = default;
 
+	void initialize();
 	void tick();
+	Registers& getRegisters() { return _registers; }
+
 	static const int CLOCK_FREQUENCY_HZ = 4194304;
+	static const uint16_t START_PC_ADDR = 0x0100;
 
 private:
 	struct OpCode
@@ -68,8 +72,6 @@ private:
 			return false;
 		}
 	};
-
-	static const uint16_t START_PC_ADDR = 0x0100;
 
 	void initInstructions();
 	CPU::OpCode* interruptServiceRoutine(uint16_t addr);

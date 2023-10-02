@@ -17,21 +17,25 @@ CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_currentOpCode(nullptr),
 	_currentInstruction(0)
 {
-	_registers.a = 0x01;
+	_registers.a = 0;
 	_registers.b = 0;
-	_registers.c = 0x13;
+	_registers.c = 0;
 	_registers.d = 0;
-	_registers.e = 0xD8;
+	_registers.e = 0;
 	_registers.f = 0;
-	_registers.h = 0x01;
-	_registers.l = 0x4D;
-	_registers.pc = CPU::START_PC_ADDR;
+	_registers.h = 0;
+	_registers.l = 0;
+	_registers.pc = 0;
 	_registers.sp = 0xFFFE;
-	_registers.flags.z = 1;
+	_registers.flags.z = 0;
 	_registers.flags.n = 0;
-	_registers.flags.h = 1;
-	_registers.flags.c = 1;
+	_registers.flags.h = 0;
+	_registers.flags.c = 0;
 	_registers.af();
+}
+
+void CPU::initialize()
+{
 	initInstructions();
 
 	_isr = OpCode("ISR", 0x00, 1, 20, {

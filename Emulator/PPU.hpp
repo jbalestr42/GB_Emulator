@@ -21,7 +21,9 @@ public:
 	PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title);
 	~PPU() = default;
 
+	void initialize();
 	void tick();
+
 	void display();
 	void clear();
 	void close();

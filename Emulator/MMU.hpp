@@ -26,6 +26,8 @@ public:
 
 	MMU();
 	~MMU();
+	
+	void initialize();
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
@@ -33,6 +35,7 @@ public:
 	virtual size_t size() const override;
 	virtual const char* name() const override;
 	bool loadRom(const char* path);
+	Cartridge& getCartridge();
 
 	void dump();
 	void addMemoryOverride(uint16_t addr, MemoryOverride override);

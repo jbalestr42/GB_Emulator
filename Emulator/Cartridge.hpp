@@ -51,7 +51,10 @@ public:
 	size_t getRamBankCount() const { return _ramSize / RAM_BANK_SIZE; }
 	bool isMultiCart() const { return _isMulticart; }
 	bool hasRam() const;
-	Cartridge::Type getRomTypeFromId(uint8_t typeId) const;
+
+	void setBoot();
+	uint8_t getBoot() const;
+	void enableBoot(bool isEnable);
 
 	virtual uint8_t read8(size_t addr) override;
 	virtual void write8(size_t addr, uint8_t v) override;
@@ -70,6 +73,7 @@ public:
 
 private:
 	void init();
+	Cartridge::Type getRomTypeFromId(uint8_t typeId) const;
 
 	std::vector<uint8_t> _data;
 	uint16_t _romBegin;
@@ -79,4 +83,6 @@ private:
 	size_t _romSize;
 	size_t _ramSize;
 	bool _isMulticart;
+	bool _bootDone;
+	bool _isBootEnable;
 };

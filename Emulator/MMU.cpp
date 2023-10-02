@@ -5,6 +5,17 @@
 #include <iomanip>
 
 MMU::MMU()
+{ }
+
+MMU::~MMU()
+{
+	for (size_t i = 0; i < _memoryRanges.size(); i++)
+	{
+		delete _memoryRanges[i];
+	}
+}
+
+void MMU::initialize()
 {
 	// 0000 - 3FFF | 16 KiB ROM bank 00 | From cartridge, usually a fixed bank
 	// 4000 - 7FFF | 16 KiB ROM Bank 01~NN | From cartridge, switchable bank via mapper (if any)
@@ -27,14 +38,6 @@ MMU::MMU()
 	_memoryRanges.push_back(new MemoryRange("HRAM", 0xFF80, 0xFFFE));
 	// FFFF - FFFF | Interrupt Enable register (IE)
 	_memoryRanges.push_back(new MemoryRange("IE Register", 0xFFFF, 0xFFFF));
-}
-
-MMU::~MMU()
-{
-	for (size_t i = 0; i < _memoryRanges.size(); i++)
-	{
-		delete _memoryRanges[i];
-	}
 }
 
 uint8_t MMU::read8(size_t addr)
@@ -109,6 +112,11 @@ void MMU::addMemoryOverride(uint16_t addr, MemoryOverride override)
 bool MMU::loadRom(const char* path)
 {
 	return _cartridge.loadRom(path);
+}
+
+Cartridge& MMU::getCartridge()
+{
+	return _cartridge;
 }
 
 void MMU::dump()

@@ -5,6 +5,7 @@
 #include "MBC2.hpp"
 #include "MBC3.hpp"
 #include "MBC5.hpp"
+#include "BootRom.hpp"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -17,7 +18,8 @@ Cartridge::Cartridge() :
 	_type(Cartridge::Type::ROM_ONLY),
 	_romSize(0),
 	_ramSize(0),
-	_isMulticart(false)
+	_isMulticart(false),
+	_bootDone(false)
 { }
 
 bool Cartridge::loadRom(const char* path)
@@ -79,6 +81,21 @@ bool Cartridge::hasRam() const
 												MBC_7_SENSOR_RUMBLE_RAM_BATTERY,
 												HUC1_RAM_BATTERY };
 	return typesWithRam.count(_type) > 0;
+}
+
+void Cartridge::setBoot()
+{
+	_bootDone = true;
+}
+
+uint8_t Cartridge::getBoot() const
+{
+	return 0xFF;
+}
+
+void Cartridge::enableBoot(bool isEnable)
+{
+	_isBootEnable = isEnable;
 }
 
 Cartridge::Type Cartridge::getRomTypeFromId(uint8_t typeId) const
@@ -146,6 +163,10 @@ Cartridge::Type Cartridge::getRomTypeFromId(uint8_t typeId) const
 
 uint8_t Cartridge::read8(size_t addr)
 {
+	if (_isBootEnable && !_bootDone && addr >= 0x0000 && addr < 0x100)
+	{
+		return BootRom::Gameboy[addr];
+	}
 	return _data[addr];
 }
 
