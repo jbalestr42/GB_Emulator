@@ -133,17 +133,9 @@ void PPU::drawBackground()
 		int xOffset = ((scrollX + x) / PPU::TILE_WIDTH_PX) % PPU::TILEMAP_WIDTH_TILE;
 		int xTileOffset = (scrollX + x) % PPU::TILE_WIDTH_PX;
 
-		uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
-		bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
-		uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
-		int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
-
-		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
-		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
-		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
-		uint8_t colorId = (msb << 1) | lsb;
-		uint8_t palette = _mmu.read8(HardwareRegisters::BGP_ADDR);
-		uint8_t color = (palette >> (colorId * 2)) & 0x3;
+		uint16_t tileAddr = getTileAddr(tileMapAddr + yOffset + xOffset);
+		uint8_t colorId = getColorId(tileAddr, xTileOffset, yTileOffset);
+		uint8_t color = getColor(colorId, HardwareRegisters::BGP_ADDR);
 
 		_display.putPixel(color, x, _currentLine);
 	}
@@ -168,17 +160,9 @@ void PPU::drawWindow()
 		int xOffset = (x - winX) / PPU::TILE_WIDTH_PX;
 		int xTileOffset = (x - winX) % PPU::TILE_WIDTH_PX;
 
-		uint8_t tileId = _mmu.read8(tileMapAddr + yOffset + xOffset);
-		bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
-		uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
-		int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
-
-		uint16_t tileAddr = tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
-		uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2), 7 - xTileOffset);
-		uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileOffset * 2 + 1), 7 - xTileOffset);
-		uint8_t colorId = (msb << 1) | lsb;
-		uint8_t palette = _mmu.read8(HardwareRegisters::BGP_ADDR);
-		uint8_t color = (palette >> (colorId * 2)) & 0x3;
+		uint16_t tileAddr = getTileAddr(tileMapAddr + yOffset + xOffset);
+		uint8_t colorId = getColorId(tileAddr, xTileOffset, yTileOffset);
+		uint8_t color = getColor(colorId, HardwareRegisters::BGP_ADDR);
 
 		_display.putPixel(color, x, _currentLine);
 	}
@@ -239,14 +223,10 @@ void PPU::drawSprites()
 			int xTileCoord = sprite.xFlip ? PPU::TILE_WIDTH_PX - 1 - xOffset : xOffset;
 
 			uint16_t tileAddr = PPU::VRAM_TILEDATA_0_ADDR + PPU::BYTES_PER_TILE * tileId;
-			uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2), 7 - xTileCoord);
-			uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2 + 1), 7 - xTileCoord);
-			uint8_t colorId = (msb << 1) | lsb;
-
+			uint8_t colorId = getColorId(tileAddr, xTileCoord, yTileCoord);
 			uint16_t paletteAddr = sprite.paletteId ? HardwareRegisters::OBP1_ADDR : HardwareRegisters::OBP0_ADDR;
-			uint8_t palette = _mmu.read8(paletteAddr);
+			uint8_t color = getColor(colorId, paletteAddr);
 
-			uint8_t color = (palette >> (colorId * 2)) & 0x3;
 			bool isPixelVisible = colorId != 0; // 0 is transparent
 			bool shouldRenderPixel = !sprite.isBgAndWinOver || _display.isPixelWhite(xScreenCoord, _currentLine);
 			if (isPixelVisible && shouldRenderPixel)
@@ -260,9 +240,30 @@ void PPU::drawSprites()
 void PPU::setMode(PPU::Mode mode)
 {
 	_mode = mode;
-
 	uint8_t stat = _mmu.read8(HardwareRegisters::STAT_ADDR) & 0b11111100;
 	_mmu.write8(HardwareRegisters::STAT_ADDR, stat | static_cast<uint8_t>(_mode));
+}
+
+uint16_t PPU::getTileAddr(uint16_t tileMapAddr) const
+{
+	uint8_t tileId = _mmu.read8(tileMapAddr);
+	bool isSigned = BitUtils::GetBit(_mmu.read8(HardwareRegisters::LCDC_ADDR), LCDC_BG_WIN_DATA_POS);
+	uint16_t tileSetAddr = isSigned ? PPU::VRAM_TILEDATA_0_ADDR : PPU::VRAM_TILEDATA_2_ADDR;
+	int finalTileId = isSigned ? tileId : static_cast<int8_t>(tileId);
+	return tileSetAddr + PPU::BYTES_PER_TILE * finalTileId;
+}
+
+uint8_t PPU::getColorId(uint16_t tileAddr, uint8_t xTileCoord, uint8_t yTileCoord) const
+{
+	uint8_t lsb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2), 7 - xTileCoord);
+	uint8_t msb = BitUtils::GetBit(_mmu.read8(tileAddr + yTileCoord * 2 + 1), 7 - xTileCoord);
+	return (msb << 1) | lsb;
+}
+
+uint8_t PPU::getColor(uint8_t colorId, uint16_t paletteAddr) const
+{
+	uint8_t palette = _mmu.read8(paletteAddr);
+	return (palette >> (colorId * 2)) & 0x3;
 }
 
 bool PPU::isLYLYCInterruptEnabled() const

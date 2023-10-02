@@ -24,6 +24,20 @@ public:
 	void initialize();
 	void tick();
 
+private:
+	void draw();
+	void drawBackground();
+	void drawWindow();
+	void drawSprites();
+	void setMode(PPU::Mode mode);
+	uint16_t getTileAddr(uint16_t tileMapAddr) const;
+	uint8_t getColorId(uint16_t tileAddr, uint8_t xTileCoord, uint8_t yTileCoord) const;
+	uint8_t getColor(uint8_t colorId, uint16_t paletteAddr) const;
+	bool isLYLYCInterruptEnabled() const;
+	bool isHBlankInterruptEnabled() const;
+	bool isVBlankInterruptEnabled() const;
+	bool isOamInterruptEnabled() const;
+
 	static const uint16_t VRAM_TILEDATA_0_ADDR = 0x8000;
 	static const uint16_t VRAM_TILEDATA_1_ADDR = 0x8800;
 	static const uint16_t VRAM_TILEDATA_2_ADDR = 0x9000;
@@ -39,7 +53,7 @@ public:
 	static const uint8_t LCDC_WIN_ENABLE_POS = 5;
 	static const uint8_t LCDC_WIN_TILEMAP_POS = 6;
 	static const uint8_t LCDC_LCD_PPU_ENABLE_POS = 7;
-	
+
 	static const size_t TILEMAP_WIDTH_TILE = 32;
 	static const size_t TILEMAP_HEIGHT_TILE = 32;
 	static const size_t TILE_WIDTH_PX = 8;
@@ -47,18 +61,6 @@ public:
 	static const size_t TILEMAP_WIDTH_PX = TILEMAP_WIDTH_TILE * TILE_WIDTH_PX;
 	static const size_t TILEMAP_HEIGHT_PX = TILEMAP_HEIGHT_TILE * TILE_HEIGHT_PX;
 	static const uint16_t BYTES_PER_TILE = 16;
-
-
-private:
-	void draw();
-	void drawBackground();
-	void drawWindow();
-	void drawSprites();
-	void setMode(PPU::Mode mode);
-	bool isLYLYCInterruptEnabled() const;
-	bool isHBlankInterruptEnabled() const;
-	bool isVBlankInterruptEnabled() const;
-	bool isOamInterruptEnabled() const;
 
 	static const uint8_t WIDTH = 160;
 	static const uint8_t HEIGHT = 144;
