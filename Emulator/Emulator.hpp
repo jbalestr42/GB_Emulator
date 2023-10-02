@@ -7,10 +7,12 @@
 #include "PPU.hpp"
 #include "Input.hpp"
 
+class IDisplay;
+
 class Emulator
 {
 public:
-	Emulator();
+	Emulator(IDisplay& display);
 	~Emulator() = default;
 
     void initialize();
@@ -20,6 +22,7 @@ public:
     void enableBootRom(bool isEnable);
 
 private:
+    IDisplay& _display;
     MMU _mmu;
     Interrupts _interrupts;
     CPU _cpu;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <SFML\Graphics.hpp>
 #include <cstdint>
 #include "OamSearchMode.hpp"
 
 class MMU;
 class Interrupts;
+class IDisplay;
 
 class PPU
 {
@@ -18,18 +18,11 @@ public:
 		VBlank = 1
 	};
 
-	PPU(MMU& mmu, Interrupts& interrupts, std::uint16_t width, std::uint16_t height, std::uint8_t pixelSize, std::uint8_t frameRate, const char* title);
+	PPU(MMU& mmu, Interrupts& interrupts, IDisplay& display);
 	~PPU() = default;
 
 	void initialize();
 	void tick();
-
-	void display();
-	void clear();
-	void close();
-	bool isOpen();
-	bool pollEvent(sf::Event& events);
-	void putPixel(uint8_t color, uint8_t x, uint8_t y);
 
 	static const uint16_t VRAM_TILEDATA_0_ADDR = 0x8000;
 	static const uint16_t VRAM_TILEDATA_1_ADDR = 0x8800;
@@ -66,10 +59,13 @@ private:
 	bool isHBlankInterruptEnabled() const;
 	bool isVBlankInterruptEnabled() const;
 	bool isOamInterruptEnabled() const;
-	sf::Color getColorFromPalette(uint8_t colorId);
+
+	static const uint8_t WIDTH = 160;
+	static const uint8_t HEIGHT = 144;
 
 	MMU& _mmu;
 	Interrupts& _interrupts;
+	IDisplay& _display;
 
 	PPU::Mode _mode;
 	OamSearchMode _oamSearchMode;
@@ -77,13 +73,4 @@ private:
 	uint8_t _currentLine;
 	uint8_t _windowLineCounter;
 	bool _lycInterruptRaiseDuringRendering;
-
-	// Move to LCD/IDisplay to manage SFML and Ncurse ?
-	uint16_t _width;
-	uint16_t _height;
-	uint8_t _pixelSize;
-	uint8_t _frameRate;
-
-	sf::RenderWindow _window;
-	sf::VertexArray _vertices;
 };

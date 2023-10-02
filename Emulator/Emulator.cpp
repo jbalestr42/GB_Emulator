@@ -1,12 +1,14 @@
 #include "Emulator.hpp"
 #include "HardwareRegisters.hpp"
+#include "IDisplay.hpp"
 
-Emulator::Emulator() :
+Emulator::Emulator(IDisplay& display) :
+    _display(display),
 	_mmu(),
 	_interrupts(_mmu),
 	_cpu(_mmu, _interrupts),
 	_timer(_interrupts),
-	_ppu(_mmu, _interrupts, 160, 144, 4, 60, "Game Boy"),
+	_ppu(_mmu, _interrupts, display),
 	_input(_mmu)
 { }
 
@@ -52,16 +54,9 @@ void Emulator::update()
     sf::Clock clock;
     sf::Time time;
     sf::Time frameDuration = sf::seconds(1.0f / 60.0f);
-    while (_ppu.isOpen())
+    while (_display.isOpen())
     {
-        sf::Event event;
-        while (_ppu.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-            {
-                _ppu.close();
-            }
-        }
+        _display.pollEvent();
 
         while (time < frameDuration)
         {
