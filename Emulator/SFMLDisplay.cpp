@@ -1,9 +1,14 @@
 #include "SFMLDisplay.hpp"
 
-const sf::Color SFMLDisplay::COLOR_MAPPING[] = {	sf::Color(255, 255, 255),
-													sf::Color(170, 170, 170),
-													sf::Color(85, 85, 85),
-													sf::Color(0, 0, 0) };
+const sf::Color SFMLDisplay::LIGHTEST_GREEN = sf::Color(155, 188, 15);
+const sf::Color SFMLDisplay::LIGHT_GREEN = sf::Color(139, 172, 15);
+const sf::Color SFMLDisplay::DARK_GREEN = sf::Color(48, 98, 48);
+const sf::Color SFMLDisplay::DARKEST_GREEN = sf::Color(15, 56, 15);
+
+const sf::Color SFMLDisplay::COLORS[] = {	LIGHTEST_GREEN,
+											LIGHT_GREEN,
+											DARK_GREEN,
+											DARKEST_GREEN };
 
 
 SFMLDisplay::SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, uint8_t frameRate, const char* title) :
@@ -26,10 +31,10 @@ SFMLDisplay::SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, uin
 			quad[2].position = sf::Vector2f(static_cast<float>((x + 1) * _pixelSize), static_cast<float>((y + 1) * _pixelSize));
 			quad[3].position = sf::Vector2f(static_cast<float>(x * _pixelSize), static_cast<float>((y + 1) * _pixelSize));
 
-			quad[0].color = sf::Color::White;
-			quad[1].color = sf::Color::White;
-			quad[2].color = sf::Color::White;
-			quad[3].color = sf::Color::White;
+			quad[0].color = SFMLDisplay::LIGHTEST_GREEN;
+			quad[1].color = SFMLDisplay::LIGHTEST_GREEN;
+			quad[2].color = SFMLDisplay::LIGHTEST_GREEN;
+			quad[3].color = SFMLDisplay::LIGHTEST_GREEN;
 		}
 	}
 	_window.setFramerateLimit(_frameRate);
@@ -74,14 +79,14 @@ void SFMLDisplay::pollEvent()
 
 bool SFMLDisplay::isPixelWhite(uint8_t x, uint8_t y)
 {
-	return _vertices[(x + y * _width) * 4].color == sf::Color::White;
+	return _vertices[(x + y * _width) * 4].color == SFMLDisplay::LIGHTEST_GREEN;
 }
 
 void SFMLDisplay::putPixel(uint8_t color, uint8_t x, uint8_t y)
 {
 	sf::Vertex* quad = &_vertices[(x + y * _width) * 4];
 
-	sf::Color c = COLOR_MAPPING[color];
+	sf::Color c = COLORS[color];
 	quad[0].color = c;
 	quad[1].color = c;
 	quad[2].color = c;

@@ -18,8 +18,13 @@ public:
 	bool isPixelWhite(uint8_t x, uint8_t y) override;
 	void putPixel(uint8_t color, uint8_t x, uint8_t y) override;
 
+	static const sf::Color LIGHTEST_GREEN;
+	static const sf::Color LIGHT_GREEN;
+	static const sf::Color DARK_GREEN;
+	static const sf::Color DARKEST_GREEN;
+
 private:
-	static const sf::Color COLOR_MAPPING[];
+	static const sf::Color COLORS[];
 
 	sf::RenderWindow _window;
 	sf::VertexArray _vertices;
