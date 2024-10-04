@@ -4,14 +4,14 @@
 int main(int argc, char* argv[])
 {
 	SFMLDisplay display(160, 144, 4, 60, "Game Boy");
-    Emulator emulator(display);
+	Emulator emulator(display);
 
-    emulator.loadRom(argv[1]);
+	emulator.loadRom(argv[1]);
 
-    emulator.initialize();
-    emulator.enableBootRom(true);
+	emulator.initialize();
+	emulator.enableBootRom(true);
 
-    emulator.update();
+	emulator.update();
 
-    return 0;
+	return 0;
 }

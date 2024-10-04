@@ -15,19 +15,19 @@ public:
 	Emulator(IDisplay& display);
 	~Emulator() = default;
 
-    void initialize();
-    void update();
+	void initialize();
+	void update();
 
-    bool loadRom(const char* path);
-    void enableBootRom(bool isEnable);
+	bool loadRom(const char* path);
+	void enableBootRom(bool isEnable);
 
 private:
-    IDisplay& _display;
-    MMU _mmu;
-    Interrupts _interrupts;
-    CPU _cpu;
-    Timer _timer;
-    PPU _ppu;
-    Input _input;
+	IDisplay& _display;
+	MMU _mmu;
+	Interrupts _interrupts;
+	CPU _cpu;
+	Timer _timer;
+	PPU _ppu;
+	Input _input;
 
 };
