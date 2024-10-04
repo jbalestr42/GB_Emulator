@@ -38,3 +38,4 @@ Emulator/log.txt
 Debug/
 Release/
 ROMS/
+build/
