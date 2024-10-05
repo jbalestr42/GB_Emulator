@@ -2,10 +2,10 @@
 #include "HardwareRegisters.hpp"
 #include "MMU.hpp"
 #include "Interrupts.hpp"
-#include <iostream>
 #include <string>
 
 CPU::CPU(MMU& mmu, Interrupts& interrupts) :
+	_data(),
 	_mmu(mmu),
 	_interrupts(interrupts),
 	_state(State::Fetch),
@@ -15,7 +15,8 @@ CPU::CPU(MMU& mmu, Interrupts& interrupts) :
 	_interruptEnableRequestValue(false),
 	_opCodeByte(0),
 	_currentOpCode(nullptr),
-	_currentInstruction(0)
+	_currentInstruction(0),
+	_ticks(0)
 {
 	_registers.a = 0;
 	_registers.b = 0;
@@ -70,12 +71,8 @@ void CPU::tick()
 		_interrupts.setIme(_interruptEnableRequestValue);
 	}
 
-	static std::string s = "";
 	if (_mmu.read8(HardwareRegisters::SC_ADDR) == 0x81)
 	{
-		s += _mmu.read8(HardwareRegisters::SB_ADDR);
-		char c = _mmu.read8(HardwareRegisters::SB_ADDR);
-		//std::cout << c;
 		_mmu.write8(HardwareRegisters::SC_ADDR, 0x01);
 	}
 
@@ -94,14 +91,12 @@ void CPU::tick()
 			{
 				if (_interrupts.isHaltBug())
 				{
-					std::cout << "HALT BUG" << std::endl;
 					_state = State::Fetch;
 					_haltBug = true;
 					return;
 				}
 				else
 				{
-					//std::cout << "HALT" << std::endl;
 					_state = State::Halt;
 					return;
 				}

@@ -20,7 +20,7 @@ public:
 	void tick();
 	Registers& getRegisters() { return _registers; }
 
-	static const int CLOCK_FREQUENCY_HZ = 4194304;
+	static const size_t CLOCK_FREQUENCY_HZ = 4194304;
 	static const uint16_t START_PC_ADDR = 0x0100;
 
 private:
