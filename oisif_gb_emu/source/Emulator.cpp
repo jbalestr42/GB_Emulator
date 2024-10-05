@@ -1,6 +1,7 @@
 #include "Emulator.hpp"
 #include "HardwareRegisters.hpp"
 #include "IDisplay.hpp"
+#include <iostream>
 
 Emulator::Emulator(IDisplay& display) :
 	_display(display),
@@ -50,25 +51,46 @@ void Emulator::initialize()
 
 void Emulator::update()
 {
-	// TODO separate display from ppu
+	const float maxFrameDuration = 1.f / ((float)CPU::CLOCK_FREQUENCY_HZ / PPU::TICKS_PER_FRAME);
+	sf::Clock currentFrameDuration;
 	sf::Clock clock;
-	sf::Time time;
-	sf::Time frameDuration = sf::seconds(1.0f / 60.0f);
+	size_t frames = 0;
+	
 	while (_display.isOpen())
 	{
 		_display.pollEvent();
 
-		while (time < frameDuration)
+		// We need to process PPU::TICKS_PER_FRAME
+		size_t cycles = 0;
+		while (cycles < PPU::TICKS_PER_FRAME)
 		{
-			time += clock.restart();
-
 			_cpu.tick();
 			_timer.tick();
 			_ppu.tick();
-
+			cycles++;
 		}
+
 		_input.tick();
-		time -= frameDuration;
+		cycles = 0;
+
+		if (_display.lockFramerate())
+		{
+			// If frame was computed too fast, we wait to stay at 59.7275 FPS
+			float diff = maxFrameDuration - currentFrameDuration.getElapsedTime().asSeconds();
+			if (diff > 0.f)
+			{
+				sf::sleep(sf::seconds(diff));
+			}
+			currentFrameDuration.restart();
+		}
+
+		if (clock.getElapsedTime().asSeconds() >= 1.f)
+		{
+			std::cout << "[FPS] " << frames << std::endl;
+			frames = 0;
+			clock.restart();
+		}
+		frames++;
 	}
 }
 

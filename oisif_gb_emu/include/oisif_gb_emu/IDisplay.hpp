@@ -10,4 +10,5 @@ public:
 	virtual void pollEvent() = 0;
 	virtual bool isPixelWhite(uint8_t x, uint8_t y) = 0;
 	virtual void putPixel(uint8_t color, uint8_t x, uint8_t y) = 0;
+	virtual bool lockFramerate() const = 0;
 };

@@ -11,12 +11,12 @@ const sf::Color SFMLDisplay::COLORS[] = {	LIGHTEST_GREEN,
 											DARKEST_GREEN };
 
 
-SFMLDisplay::SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, uint8_t frameRate, const char* title) :
+SFMLDisplay::SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, bool lockFramerate, const char* title) :
 	_window(sf::VideoMode(width * pixelSize, height * pixelSize), title),
 	_width(width),
 	_height(height),
 	_pixelSize(pixelSize),
-	_frameRate(frameRate)
+	_lockFramerate(lockFramerate)
 {
 	_vertices.setPrimitiveType(sf::PrimitiveType::Quads);
 	_vertices.resize(_width * _height * 4);
@@ -37,7 +37,6 @@ SFMLDisplay::SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, uin
 			quad[3].color = SFMLDisplay::LIGHTEST_GREEN;
 		}
 	}
-	_window.setFramerateLimit(_frameRate);
 }
 
 void SFMLDisplay::display()

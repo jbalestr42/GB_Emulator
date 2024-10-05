@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[])
 {
-	SFMLDisplay display(160, 144, 4, 60, "Game Boy");
+	SFMLDisplay display(160, 144, 4, false, "Game Boy");
 	Emulator emulator(display);
 
 	emulator.loadRom(argv[1]);

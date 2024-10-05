@@ -7,7 +7,7 @@
 class SFMLDisplay : public IDisplay
 {
 public:
-	SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, uint8_t frameRate, const char* title);
+	SFMLDisplay(uint16_t width, uint16_t height, uint8_t pixelSize, bool lockFramerate, const char* title);
 	~SFMLDisplay() = default;
 
 	void display() override;
@@ -17,6 +17,7 @@ public:
 	void pollEvent() override;
 	bool isPixelWhite(uint8_t x, uint8_t y) override;
 	void putPixel(uint8_t color, uint8_t x, uint8_t y) override;
+	bool lockFramerate() const override { return _lockFramerate; }
 
 	static const sf::Color LIGHTEST_GREEN;
 	static const sf::Color LIGHT_GREEN;
@@ -32,5 +33,5 @@ private:
 	uint16_t _width;
 	uint16_t _height;
 	uint8_t _pixelSize;
-	uint8_t _frameRate;
+	bool _lockFramerate;
 };
