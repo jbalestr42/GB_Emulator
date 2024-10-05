@@ -38,26 +38,26 @@ void PPU::tick()
 		_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 	}
 
-	if (_mode == PPU::Mode::OamSearch && _ticks >= 80)
+	if (_mode == PPU::Mode::OamSearch && _ticks >= PPU::OAM_TICKS)
 	{
-		_ticks -= 80;
+		_ticks -= PPU::OAM_TICKS;
 		setMode(PPU::Mode::PixelTransfer);
 	}
-	else if (_mode == PPU::Mode::PixelTransfer && _ticks >= 172)
+	else if (_mode == PPU::Mode::PixelTransfer && _ticks >= PPU::PIXEL_TRANSFER_TICKS)
 	{
 		if (isHBlankInterruptEnabled())
 		{
 			_interrupts.raiseInterrupt(Interrupts::Type::LCDStat);
 		}
-		_ticks -= 172;
+		_ticks -= PPU::PIXEL_TRANSFER_TICKS;
 		setMode(PPU::Mode::HBlank);
 		draw();
 	}
-	else if (_mode == PPU::Mode::HBlank && _ticks >= 204)
+	else if (_mode == PPU::Mode::HBlank && _ticks >= PPU::HBLANK_TICKS)
 	{
 		_currentLine++;
 		_lycInterruptRaiseDuringRendering = false;
-		_ticks -= 204;
+		_ticks -= PPU::HBLANK_TICKS;
 		if (_currentLine == 144)
 		{
 			if (isVBlankInterruptEnabled())
@@ -78,11 +78,11 @@ void PPU::tick()
 			setMode(PPU::Mode::OamSearch);
 		}
 	}
-	else if (_mode == PPU::Mode::VBlank && _ticks >= 456)
+	else if (_mode == PPU::Mode::VBlank && _ticks >= PPU::VBLANK_TICKS)
 	{
 		_currentLine++;
-		_ticks -= 456;
-		if (_currentLine > 153)
+		_ticks -= PPU::VBLANK_TICKS;
+		if (_currentLine >= PPU::SCANLINE_PER_FRAME)
 		{
 			if (isOamInterruptEnabled())
 			{

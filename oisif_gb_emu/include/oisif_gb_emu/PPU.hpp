@@ -24,6 +24,13 @@ public:
 	void initialize();
 	void tick();
 
+	static const size_t OAM_TICKS = 80;
+	static const size_t PIXEL_TRANSFER_TICKS = 172;
+	static const size_t HBLANK_TICKS = 204;
+	static const size_t VBLANK_TICKS = 456;
+	static const size_t SCANLINE_PER_FRAME = 154;
+	static const size_t TICKS_PER_FRAME = SCANLINE_PER_FRAME * VBLANK_TICKS;
+
 private:
 	void draw();
 	void drawBackground();
