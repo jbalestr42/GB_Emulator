@@ -74,8 +74,8 @@ void MBC1::write8(size_t addr, uint8_t v)
 			_romBankId = (_romBankId & 0x1F) | _romBankIdHigh;
 		}
 
-		int count = _cartridge.getRomBankCount();
-		int nbBits = static_cast<uint8_t>(log2(count));
+		size_t count = _cartridge.getRomBankCount();
+		int nbBits = static_cast<uint8_t>(log2((double)count));
 		uint8_t mask = (1 << nbBits) - 1;
 		_romBankId &= mask;
 	}
